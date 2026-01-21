@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/VMAPP.Common/">
+    <Project Path="VMAPP.Common/VMAPP.Common.csproj" Id="f8052c1a-4b2a-499b-a922-67991f95eb24" />
+  </Folder>
+  <Folder Name="/VMAPP.Data/">
+    <Project Path="VMAPP.Data/VMAPP.Data.csproj" />
+  </Folder>
+  <Folder Name="/VMAPP.Models/" />
+  <Folder Name="/VMAPP.Services/" />
+  <Folder Name="/VMAPP.Tests/" />
+  <Folder Name="/VMAPP.Web/">
+    <Project Path="VMAPP.Web/VMAPP.Web.csproj" />
+  </Folder>
+</Solution>
