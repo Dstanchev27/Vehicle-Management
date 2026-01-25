@@ -5,8 +5,12 @@
   <Folder Name="/VMAPP.Data/">
     <Project Path="VMAPP.Data/VMAPP.Data.csproj" />
   </Folder>
-  <Folder Name="/VMAPP.Models/" />
-  <Folder Name="/VMAPP.Services/" />
+  <Folder Name="/VMAPP.SandBox/">
+    <Project Path="VMAPP.SandBox/VMAPP.SandBox.csproj" Id="e46b120e-e059-470a-b113-190689d40f6e" />
+  </Folder>
+  <Folder Name="/VMAPP.Services/">
+    <Project Path="VMAPP.Services/VMAPP.Services.csproj" Id="2a26093b-fb1b-4d13-af2f-8fd3baace25e" />
+  </Folder>
   <Folder Name="/VMAPP.Tests/" />
   <Folder Name="/VMAPP.Web/">
     <Project Path="VMAPP.Web/VMAPP.Web.csproj" />

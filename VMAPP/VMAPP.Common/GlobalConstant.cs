@@ -6,7 +6,15 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public class GlobalConstant
+    public static class GlobalConstant
     {
+        public const string SystemName = "VMAPP";
+        public const string AdministratorRoleName = "Administrator";
+        public const string VINRegex = @"^[A-HJ-NPR-Z0-9]{17}$";
+        public const int VechicleServiceName = 150;
+        public const int VechicleServiceDescription = 1000;
+        public const int ServiceRecordDescription = 1500;
+        public const int CarBrandLength = 100;
+        public const int CarModelLength = 100;
     }
 }

@@ -9,6 +9,8 @@ namespace VMAPP.Web
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // Add DbContext service - Needs to be implemented
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

@@ -22,7 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Enums\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Seeding\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VMAPP.Common\VMAPP.Common.csproj" />
   </ItemGroup>
 
 </Project>
