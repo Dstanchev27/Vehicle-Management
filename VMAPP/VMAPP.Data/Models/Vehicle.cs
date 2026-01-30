@@ -13,13 +13,14 @@ namespace VMAPP.Data.Models
     public class Vehicle
     {
         [Key]
-        public int VechicleId { get; set; }
+        public int VehicleId { get; set; }
 
         [Required]
-        public required string VIN { get; set; }
+        public string VIN { get; set; }
 
         [MaxLength(GlobalConstant.CarBrandLength)]
-        public required string CarBrand { get; set; } = null!;
+        public  string CarBrand { get; set; } = null!;
+
         [MaxLength(GlobalConstant.CarModelLength)]
         public string CarModel { get; set; } = null!;
 
@@ -27,10 +28,11 @@ namespace VMAPP.Data.Models
 
         public string Color { get; set; } = null!;
 
-        public  VechicleType VechicleType { get; set; }
+        public  VechicleType VehicleType { get; set; }
 
+        // Navigation property
         public ICollection<ServiceRecord> ServiceRecords { get; set; } = new HashSet<ServiceRecord>();
-        public ICollection<VehicleVechicleService> VehicleVechicleServices { get; set; }
-            = new HashSet<VehicleVechicleService>();
+        public ICollection<VehicleVehicleService> VehicleVehicleServices { get; set; }
+            = new HashSet<VehicleVehicleService>();
     }
 }

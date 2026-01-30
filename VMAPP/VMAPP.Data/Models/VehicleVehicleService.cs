@@ -6,11 +6,11 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    public class VehicleVechicleService
+    public class VehicleVehicleService
     {
-        public int VechicleId { get; set; }
-        public Vehicle Vechicle { get; set; } = null!;
-        public int VechicleServiceId { get; set; }
+        public int VehicleId { get; set; }
+        public Vehicle Vehicle { get; set; } = null!;
+        public int VehicleServiceId { get; set; }
         public VehicleService VehicleService { get; set; } = null!;
     }
 }

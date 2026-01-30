@@ -13,17 +13,17 @@ namespace VMAPP.Data.Models
     public class VehicleService
     {
         [Key]
-        public required int Id { get; set; }
-        [MaxLength(GlobalConstant.VechicleServiceName)]
-        public required string Name { get; set; }
+        public int Id { get; set; }
+        [MaxLength(GlobalConstant.VehicleServiceName)]
+        public string Name { get; set; } = null!;
         //what the service is about
-        [MaxLength(GlobalConstant.VechicleServiceDescription)]
+        [MaxLength(GlobalConstant.VehicleServiceDescription)]
         public string Description { get; set; }
 
         // Navigation property
         public ICollection<ServiceRecord> ServiceRecord { get; set; }
             = new HashSet<ServiceRecord>();
-        public ICollection<VehicleVechicleService> VehicleVechicleServices { get; set; }
-            = new HashSet<VehicleVechicleService>();
+        public ICollection<VehicleVehicleService> VehicleVehicleServices { get; set; }
+            = new HashSet<VehicleVehicleService>();
     }
 }
