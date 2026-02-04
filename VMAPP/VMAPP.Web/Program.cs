@@ -1,5 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace VMAPP.Web
 {
+    using VMAPP.Data;
+
     public class Program
     {
         public static void Main(string[] args)
@@ -9,7 +13,11 @@ namespace VMAPP.Web
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // Add DbContext service - Needs to be implemented
+            // Add DbContext service 
+            string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString));
 
             var app = builder.Build();
 

@@ -28,7 +28,7 @@ namespace VMAPP.Data.Models
 
         public string Color { get; set; } = null!;
 
-        public  VechicleType VehicleType { get; set; }
+        public  VehicleType VehicleType { get; set; }
 
         // Navigation property
         public ICollection<ServiceRecord> ServiceRecords { get; set; } = new HashSet<ServiceRecord>();

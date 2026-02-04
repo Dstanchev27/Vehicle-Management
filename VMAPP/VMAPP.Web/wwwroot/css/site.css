@@ -1,22 +1,43 @@
-html {
-  font-size: 14px;
+/*Header style*/
+.vmapp-header {
+    background-color: white;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 15px 30px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+.buttons-color-header{
+    color: blue !important;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+#header-image {
+    height: 40px;
+    vertical-align: middle;
+    overflow: clip;
+    overflow-clip-margin: content-box;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+/*Body style*/
 body {
-  margin-bottom: 60px;
+    background-image: url('/img/Background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/*Footer style*/
+.footer {
+    background-color: none;
+
+}
+
+.vmapp-footer-line {
+    border-top: 0.1px solid black;
+}
+
+
+.footer-text-color{
+    color: blue;
 }
