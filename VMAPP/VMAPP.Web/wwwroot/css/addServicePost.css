@@ -1,0 +1,14 @@
+﻿.form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.form-box {
+    background: white;
+    padding: 40px;
+    width: 420px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}

@@ -15,11 +15,20 @@ namespace VMAPP.Data.Models
         [Key]
         public int Id { get; set; }
         [MaxLength(GlobalConstant.VehicleServiceName)]
-        public string Name { get; set; } = null!;
+        public string Name { get; set; }
+
         //what the service is about
         [MaxLength(GlobalConstant.VehicleServiceDescription)]
         public string Description { get; set; }
 
+        public DateTime CreatedOn { get; set; }
+        public string City { get; set; }
+
+        public string Address { get; set; }
+
+        public string Email { get; set; }
+
+        public string Phone { get; set; }
         // Navigation property
         public ICollection<ServiceRecord> ServiceRecord { get; set; }
             = new HashSet<ServiceRecord>();

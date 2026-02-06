@@ -1,0 +1,18 @@
+﻿body {
+    background-color: white;
+}
+
+.table-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.table-box {
+    background: white;
+    padding: 30px;
+    width: 90%;
+    max-width: 1100px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}

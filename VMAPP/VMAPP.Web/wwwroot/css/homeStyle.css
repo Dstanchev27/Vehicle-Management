@@ -1,0 +1,14 @@
+﻿h1 {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40vh;
+}
+
+/*.navigation-about-style {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}*/
