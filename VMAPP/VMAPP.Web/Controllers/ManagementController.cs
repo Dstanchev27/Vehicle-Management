@@ -17,11 +17,12 @@ namespace VMAPP.Web.Controllers
 
         public IActionResult Index()
         {
-            List<VehicleServiceViewModel> services = 
+            var services = 
                 _dbContext.VehicleServices
                     .AsNoTracking()
-                    .Select(s => new VehicleServiceViewModel()
+                    .Select(s => new EditViewModel()
                     {
+                        Id = s.Id,
                         Name = s.Name,
                         Description = s.Description,
                         CreatedOn = s.CreatedOn,
@@ -40,44 +41,112 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public IActionResult AddService()
         {
-            var newService = new VehicleServiceViewModel();
+            var newService = new AddServiceViewModel();
             return View(newService);
         }
-/*
+
         [HttpPost]
-        public IActionResult AddService(VehicleServiceViewModel newService)
+        [ValidateAntiForgeryToken]
+        public IActionResult AddService(AddServiceViewModel newService)
         {
             if (!ModelState.IsValid)
             {
                 return View(newService);
             }
 
-            _dbContext.VehicleServices.Add(newService);
-            _dbContext.SaveChanges();
-            return RedirectToAction("Index");
+            try
+            {
+                var dbService = new VehicleService()
+                {
+                    Address = newService.Address,
+                    City = newService.City,
+                    Description = newService.Description,
+                    Email = newService.Email,
+                    Name = newService.Name,
+                    Phone = newService.Phone,
+                    CreatedOn = DateTime.UtcNow,
+                };
+
+                _dbContext.VehicleServices.Add(dbService);
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
-        /*
+
         [HttpGet]
-        public IActionResult EditService()
+        public IActionResult EditService(int id)
         {
-            return View();
+            var entity = _dbContext.VehicleServices
+                .AsNoTracking()
+                .FirstOrDefault(s => s.Id == id);
+
+            if (entity == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var model = new EditViewModel
+            {
+                Id = entity.Id,
+                Name = entity.Name,
+                City = entity.City,
+                Address = entity.Address,
+                Email = entity.Email,
+                Phone = entity.Phone,
+                Description = entity.Description,
+                CreatedOn = entity.CreatedOn
+            };
+
+            return View(model);
         }
 
         [HttpPost]
-        public IActionResult EditService()
+        [ValidateAntiForgeryToken]
+        public IActionResult EditService(EditViewModel model)
         {
-            _dbContext.VehicleServices.Update(service);
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var entity = _dbContext.VehicleServices.FirstOrDefault(s => s.Id == model.Id);
+            if (entity == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            entity.Name = model.Name;
+            entity.City = model.City;
+            entity.Address = model.Address;
+            entity.Email = model.Email;
+            entity.Phone = model.Phone;
+            entity.Description = model.Description;
+
+            _dbContext.VehicleServices.Update(entity);
             _dbContext.SaveChanges();
-            return RedirectToAction("Index");
+
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
-        public IActionResult DeleteService()
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteService(int id)
         {
-            _dbContext.VehicleServices.Remove(service);
+            var entity = _dbContext.VehicleServices.FirstOrDefault(s => s.Id == id);
+
+            if (entity == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            _dbContext.VehicleServices.Remove(entity);
             _dbContext.SaveChanges();
-            return RedirectToAction("Index");
+
+            return RedirectToAction(nameof(Index));
         }
-        */
     }
 }

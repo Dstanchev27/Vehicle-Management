@@ -1,0 +1,46 @@
+﻿@model DeleteViewModel
+
+<div class="form-wrapper">
+    <div class="form-box">
+        <h2 class="text-center mb-4 text-danger">Delete Service</h2>
+
+        <form asp-action="DeleteService" method="post" asp-antiforgery="true">
+            <input asp-for="Id" type="hidden" />
+
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input class="form-control" value="@Model.Name" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">City</label>
+                <input class="form-control" value="@Model.City" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <input class="form-control" value="@Model.Address" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input class="form-control" value="@Model.Email" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Phone</label>
+                <input class="form-control" value="@Model.Phone" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" rows="3" disabled>@Model.Description</textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Permanently delete this service?');">Delete</button>
+                <a asp-action="Index" class="btn btn-secondary btn-sm">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

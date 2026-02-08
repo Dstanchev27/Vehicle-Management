@@ -5,8 +5,6 @@
 /*Header style*/
 .vmapp-header {
     background-color: white;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     padding: 15px 30px;
 }
@@ -17,9 +15,6 @@
 
 #header-image {
     height: 40px;
-    vertical-align: middle;
-    overflow: clip;
-    overflow-clip-margin: content-box;
 }
 
 /*Body style*/
@@ -31,17 +26,33 @@ body {
     background-attachment: fixed;
 }
 
-/*Footer style*/
-.footer {
-    background-color: none;
-
+html, body {
+    height: 100%;
 }
 
+.vmapp-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.vmapp-body > header,
+.vmapp-body > footer {
+    flex: 0 0 auto;
+}
+
+.vmapp-body > .container {
+    flex: 1 0 auto;
+}
+
+/*Footer style - reduced vertical size so it is less tall and won't cover the body*/
 .vmapp-footer-line {
-    border-top: 0.1px solid black;
+    border-top: 1px solid black;
+    background-color: white;
+    padding: 6px 0; 
+    font-size: 0.9rem;
 }
 
-
-.footer-text-color{
+.footer-text-color {
     color: blue;
 }

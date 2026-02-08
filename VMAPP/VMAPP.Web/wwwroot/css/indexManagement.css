@@ -6,13 +6,53 @@
     display: flex;
     justify-content: center;
     margin-top: 40px;
+    padding-bottom: 24px; 
 }
 
 .table-box {
     background: white;
-    padding: 30px;
-    width: 90%;
+    padding: 20px;
+    width: 95%;
     max-width: 1100px;
     border-radius: 10px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.table-box table th,
+.table-box table td {
+    vertical-align: middle;
+}
+
+.table-box table .contact-email {
+    max-width: 240px;
+    word-break: break-word;
+}
+
+.table-box table .contact-phone {
+    max-width: 140px;
+}
+
+.table-box table th.action-col,
+.table-box table td.action-col {
+    width: 90px;
+    max-width: 90px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.table-box .btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .table-box {
+        padding: 12px;
+    }
+
+    .table-box table th.action-col,
+    .table-box table td.action-col {
+        width: 72px;
+        max-width: 72px;
+    }
 }
