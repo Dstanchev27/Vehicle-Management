@@ -56,3 +56,15 @@ html, body {
 .footer-text-color {
     color: blue;
 }
+
+/* Center navbar links while keeping logo at left.
+   Applies on expanded/collapsed area; keeps responsive behavior. */
+.navbar .navbar-collapse {
+    justify-content: center;
+}
+
+/* Small visual spacing between nav links */
+.navbar .navbar-nav .nav-link {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
