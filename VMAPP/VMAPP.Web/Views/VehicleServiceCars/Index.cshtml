@@ -1,8 +1,4 @@
-﻿@model IEnumerable<VMAPP.Web.Models.VehicleServiceCars.ServiceIndexViewModel>
-
-@* DataTables CSS (remove if you include these globally) *@
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+﻿@model VMAPP.Web.Models.VehicleServiceCars.ServiceIndexViewModel
 
 <div class="table-wrapper">
     <div class="table-box">
@@ -11,102 +7,51 @@
             <h2 class="mb-0">Vehicle Service - Search</h2>
 
             <div class="d-flex">
-                <input id="external-search" class="form-control me-2" style="min-width:220px" placeholder="Search services..." value="@(ViewBag.Query ?? "")" />
-                <a asp-controller="Management" asp-action="AddService" class="btn btn-sm btn-primary">Create New Service</a>
+                <form asp-controller="VehicleServiceCars" asp-action="FilterService" method="post" class="d-flex">
+                    @Html.AntiForgeryToken()
+                    <label asp-for="Name" class="form-label me-2 mb-0"></label>
+                    <input asp-for="Name" class="form-control me-2" placeholder="Enter name" />
+                    <input asp-for="Id" type="hidden" />
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+                </form>
             </div>
         </div>
 
-        <div class="loading text-center py-4">Loading...</div>
+        @if (!string.IsNullOrEmpty(Model.Name))
+        {
 
-        <div id="sectionServicesTable" class="table-responsive" style="display:none">
-            <table id="servicesTable" class="datatable table table-hover table-striped table-bordered dt-responsive nowrap w-100 align-middle">
-                <thead class="thead-light table-dark">
-                    <tr>
-                        <th scope="col" class="text-center">Service</th>
-                        <th scope="col" class="text-center">VIN</th>
-                        <th scope="col" class="text-center">Make</th>
-                        <th scope="col" class="text-center">Model</th>
-                        <th scope="col" class="text-center">Year</th>
-                        <th scope="col" class="text-center">Edit Service</th>
-                        <th scope="col" class="text-center">Delete Service</th>
-                    </tr>
-                </thead>
+            <div id="sectionServicesTable" class="table-responsive">
+                <table id="servicesTable" class="datatable table table-hover table-striped table-bordered dt-responsive nowrap w-100 align-middle">
+                    <thead class="thead-light table-dark">
+                        <tr>
+                            <th scope="col" class="text-center">Service</th>
+                            <th scope="col" class="text-center">VIN</th>
+                            <th scope="col" class="text-center">Make</th>
+                            <th scope="col" class="text-center">Model</th>
+                            <th scope="col" class="text-center">Edit Vehicle</th>
+                            <th scope="col" class="text-center">Delete Vehicle</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    @* Render one row per car, referencing its parent service *@
-                    @foreach (var service in Model)
-                    {
-                        if (service.Cars != null && service.Cars.Any())
+                    <tbody>
+                        @foreach (var car in Model.Cars)
                         {
-                            foreach (var car in service.Cars)
-                            {
-                                <tr data-service-id="@service.Id" data-car-id="@car.Id">
-                                    <td class="text-left text-break">@service.Name</td>
-                                    <td class="text-center text-break">@car.VIN</td>
-                                    <td class="text-left">@car.Make</td>
-                                    <td class="text-left">@car.Model</td>
-                                    <td class="text-center">@car.Year</td>
-                                    <td class="text-center">
-                                        <a asp-controller="VehicleServiceCars"
-                                           asp-action="EditVehicle"
-                                           asp-route-id="@service.Id"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Edit
-                                        </a>
-                                    </td>
-                                    <td class="text-center">
-                                        <form asp-controller="VehicleServiceCars"
-                                              asp-action="DeleteVehicle"
-                                              asp-route-id="@service.Id"
-                                              method="post"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Delete this service?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr data-service-id="@service.Id">
-                                <td class="text-left text-break">@service.Name</td>
-                                <td class="text-center" colspan="4">No cars</td>
-                                <td class="text-center">
-                                    <a asp-controller="VehicleServiceCars"
-                                       asp-action="EditVehicle"
-                                       asp-route-id="@service.Id"
-                                       class="btn btn-sm btn-outline-primary">
-                                        Edit
-                                    </a>
-                                </td>
-                                <td class="text-center">
-                                    <form asp-controller="VehicleServiceCars"
-                                          asp-action="DeleteVehicle"
-                                          asp-route-id="@service.Id"
-                                          method="post"
-                                          class="d-inline"
-                                          onsubmit="return confirm('Delete this service?');">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                </td>
+                            <tr data-service-id="@Model.Id" data-car-id="@car.Id">
+                                <td class="text-center text-break">@car.VIN</td>
+                                <td class="text-left">@car.Make</td>
+                                <td class="text-left">@car.Model</td>
+                                <td class="text-center">Edit</td>
+                                <td class="text-center">Delete</td>
                             </tr>
                         }
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+        }
+
     </div>
 </div>
 
 @section Scripts {
-    @* DataTables scripts (Bootstrap5 + Responsive). jQuery is included by layout. *@
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
-
     <script src="~/js/vehicleServiceCars.js" asp-append-version="true"></script>
 }
