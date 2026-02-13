@@ -25,18 +25,7 @@ namespace VMAPP.SandBox
             using var scope = host.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-
-
-            GiveInformation(db);
         }
-        public static void GiveInformation(ApplicationDbContext db)
-        {
-            List<Vehicle> vehicles = db.Vehicles.ToList();
-            foreach (var vehicle in vehicles)
-            {
-                Console.WriteLine(
-                    $"Vehicle ID: {vehicle.VehicleId}, VIN: {vehicle.VIN}, Brand: {vehicle.CarBrand}, Model: {vehicle.CarModel}, Year: {vehicle.CreatedOnYear.Year}, Color: {vehicle.Color}, Type: {vehicle.VehicleType}");
-            }
-        }
+        
     }
 }

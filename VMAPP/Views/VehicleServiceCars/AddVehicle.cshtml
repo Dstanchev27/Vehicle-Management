@@ -1,5 +1,4 @@
-﻿@model VMAPP.Web.Models.VehicleServiceCars.AddVehicleViewModel
-@using VMAPP.Data.Models.Enums
+@model VMAPP.Web.Models.VehicleServiceCars.AddVehicleViewModel
 
 <link rel="stylesheet" href="~/css/addVehicle.css" asp-append-version="true" />
 
@@ -13,9 +12,6 @@
             <div class="card-body">
                 <form asp-controller="VehicleServiceCars" asp-action="AddVehicle" method="post" class="row g-3">
                     @Html.AntiForgeryToken()
-                    
-                    <input asp-for="ServiceName" hidden/>
-                    <input asp-for="ServiceId" hidden />
 
                     <div class="col-md-6">
                         <label asp-for="VIN" class="form-label"></label>
@@ -34,10 +30,10 @@
                         <input asp-for="CarModel" class="form-control" />
                         <span asp-validation-for="CarModel" class="text-danger"></span>
                     </div>
-                        
+
                     <div class="col-md-3">
                         <label asp-for="CreatedOnYear" class="form-label"></label>
-                        <input asp-for="CreatedOnYear" type="number" class="form-control" step="1" min="1886" max="2100" />
+                        <input asp-for="CreatedOnYear" type="number" class="form-control" />
                         <span asp-validation-for="CreatedOnYear" class="text-danger"></span>
                     </div>
 
@@ -49,7 +45,7 @@
 
                     <div class="col-md-6">
                         <label asp-for="VehicleType" class="form-label"></label>
-                        <select asp-for="VehicleType" class="form-select" asp-items="Html.GetEnumSelectList<VehicleType>()"></select>
+                        <input asp-for="VehicleType" class="form-control" />
                         <span asp-validation-for="VehicleType" class="text-danger"></span>
                     </div>
 

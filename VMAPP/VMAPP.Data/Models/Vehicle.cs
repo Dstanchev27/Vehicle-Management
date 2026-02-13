@@ -24,7 +24,7 @@ namespace VMAPP.Data.Models
         [MaxLength(GlobalConstant.CarModelLength)]
         public string CarModel { get; set; } = null!;
 
-        public DateTime CreatedOnYear { get; set; }
+        public int CreatedOnYear { get; set; }
 
         public string Color { get; set; } = null!;
 

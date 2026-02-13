@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 using VMAPP.Data;
+using VMAPP.Data.Models;
+using VMAPP.Data.Models.Enums;
 using VMAPP.Web.Models.VehicleServiceCars;
+using VMAPP.Web.Models.VehicleServiceModels;
 
 namespace VMAPP.Web.Controllers
 {
@@ -33,11 +37,18 @@ namespace VMAPP.Web.Controllers
                     Cars = s.VehicleVehicleServices.Select(vs => new VehicleServiceCarModel
                     {
                         Id = vs.Vehicle.VehicleId,
+                        VIN = vs.Vehicle.VIN,
                         Make = vs.Vehicle.CarModel,
                         Model = vs.Vehicle.CarBrand,
+                        CreatedOnYear = vs.Vehicle.CreatedOnYear,
                     }).ToList()
                 })
                 .FirstOrDefault();
+
+            if (model == null)
+            {
+                model = new ServiceIndexViewModel();
+            }
 
             return View(model);
         }
@@ -55,36 +66,136 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult AddVehicle()
+        public IActionResult AddVehicle(int serviceId, string serviceName)
         {
-            var newVehicle = new AddVehicleViewModel();
+            var newVehicle = new AddVehicleViewModel()
+            {
+                ServiceId = serviceId,
+                ServiceName = serviceName
+            };
             return View(newVehicle);
         }
 
         [HttpPost]
-        public IActionResult AddVehicle(string make, string model, int year)
+        [ValidateAntiForgeryToken]
+        public IActionResult AddVehicle(AddVehicleViewModel newVehicle)
         {
-            ViewBag.Message = $"Car added: {year} {make} {model}";
-            return View();
+            if (!ModelState.IsValid)
+            {
+                return View(newVehicle);
+            }
+
+            try
+            {
+                var dbVehicle = new Vehicle()
+                {
+                    VIN = newVehicle.VIN,
+                    CarBrand = newVehicle.CarBrand,
+                    CarModel = newVehicle.CarModel,
+                    CreatedOnYear = newVehicle.CreatedOnYear,
+                    Color = newVehicle.Color,
+                    VehicleType = newVehicle.VehicleType
+                };
+
+                var vehicleServiceVehicle = new VehicleVehicleService()
+                {
+                    VehicleServiceId = newVehicle.ServiceId,
+                    Vehicle = dbVehicle
+                };
+
+                dbVehicle.VehicleVehicleServices.Add(vehicleServiceVehicle);
+
+                _dbContext.Vehicles.Add(dbVehicle);
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(Index), new { serviceName = newVehicle.ServiceName });
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("", "Unable to save vehicle to the database. Please try again.");
+                return View(newVehicle);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                return View(newVehicle);
+            }
         }
 
         [HttpGet]
-        public IActionResult EditVehicles()
+        public async Task<IActionResult> EditVehicle(int id, int serviceId, string serviceName)
         {
-            return View();
+            var entity = await _dbContext.Vehicles
+                .AsNoTracking()
+                .Include(v => v.VehicleVehicleServices)
+                .FirstOrDefaultAsync(v => v.VehicleId == id)!;
+
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            var model = new EditVehicleViewModel()
+            {
+                ServiceId = serviceId,
+                VehicleId = entity.VehicleId,
+                VIN = entity.VIN,
+                CarBrand = entity.CarBrand,
+                CarModel = entity.CarModel,
+                CreatedOnYear = entity.CreatedOnYear,
+                Color = entity.Color,
+                VehicleType = entity.VehicleType,
+                ServiceName = serviceName
+            };
+
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditVehicle()
+        public IActionResult EditVehicle(EditVehicleViewModel model, int id)
         {
-            return View();
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var dbVehicle = _dbContext.Vehicles.FirstOrDefault(v => v.VehicleId == id);
+            if (dbVehicle == null)
+            {
+                return NotFound();
+            }
+            dbVehicle.VIN = model.VIN;
+            dbVehicle.CarBrand = model.CarBrand;
+            dbVehicle.CarModel = model.CarModel;
+            dbVehicle.CreatedOnYear = model.CreatedOnYear;
+            dbVehicle.Color = model.Color;
+            dbVehicle.VehicleType = model.VehicleType;
+
+            _dbContext.Vehicles.Update(dbVehicle);
+            _dbContext.SaveChanges();
+
+            return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
         }
 
         [HttpPost]
-        public IActionResult DeleteVehicle()
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteVehicle(EditVehicleViewModel model,int id)
         {
-            return View();
+            var vehicle = _dbContext.Vehicles.FirstOrDefault(v => v.VehicleId == id);
+            if (vehicle == null)
+            {
+                return NotFound();
+            }
+            try
+            {
+                _dbContext.Vehicles.Remove(vehicle);
+                _dbContext.SaveChanges();
+                return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
+            }
+            catch (Exception)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }

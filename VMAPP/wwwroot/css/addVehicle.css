@@ -1,0 +1,14 @@
+.add-vehicle-card {
+    max-width: 920px;
+    margin: 0.5rem auto;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.add-vehicle-card .card-body {
+    padding: 1.25rem;
+}
+
+.add-vehicle-card .form-label {
+    font-weight: 500;
+}

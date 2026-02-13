@@ -1,0 +1,51 @@
+@model VMAPP.Web.Models.VehicleServiceCars.EditVehicleViewModel
+
+<link rel="stylesheet" href="~/css/addVehicle.css" asp-append-version="true" />
+
+<div class="table-wrapper">
+    <div class="table-box">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Delete Vehicle</h2>
+        </div>
+
+        <div class="card add-vehicle-card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <p class="text-muted">You are about to delete the following vehicle. This action cannot be undone.</p>
+                </div>
+
+                <dl class="row">
+                    <dt class="col-sm-3">VIN</dt>
+                    <dd class="col-sm-9">@Model.VIN</dd>
+
+                    <dt class="col-sm-3">Brand</dt>
+                    <dd class="col-sm-9">@Model.CarBrand</dd>
+
+                    <dt class="col-sm-3">Model</dt>
+                    <dd class="col-sm-9">@Model.CarModel</dd>
+
+                    <dt class="col-sm-3">Year</dt>
+                    <dd class="col-sm-9">@Model.CreatedOnYear</dd>
+
+                    <dt class="col-sm-3">Color</dt>
+                    <dd class="col-sm-9">@Model.Color</dd>
+
+                    <dt class="col-sm-3">Type</dt>
+                    <dd class="col-sm-9">@Model.VehicleType</dd>
+                </dl>
+
+                <form asp-controller="VehicleServiceCars" asp-action="DeleteVehicle" method="post" onsubmit="return confirm('Delete this vehicle?');">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="VehicleId" type="hidden" />
+                    <input asp-for="ServiceId" type="hidden" />
+                    <input asp-for="ServiceName" type="hidden" />
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <a asp-controller="VehicleServiceCars" asp-action="Index" asp-route-serviceName="@Model.ServiceName" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

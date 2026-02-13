@@ -14,11 +14,20 @@
                     <input asp-for="Id" type="hidden" />
                     <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
                 </form>
+
+
             </div>
         </div>
 
         @if (!string.IsNullOrEmpty(Model.Name))
         {
+            <a asp-controller="VehicleServiceCars"
+               asp-action="AddVehicle"
+               asp-route-serviceName="@Model.Name"
+               asp-route-serviceId="@Model.Id"
+               class="btn btn-sm btn-primary ms-2 align-self-center">
+                Add Vehicle
+            </a>
 
             <div id="sectionServicesTable" class="table-responsive">
                 <table id="servicesTable" class="datatable table table-hover table-striped table-bordered dt-responsive nowrap w-100 align-middle">
@@ -37,11 +46,33 @@
                         @foreach (var car in Model.Cars)
                         {
                             <tr data-service-id="@Model.Id" data-car-id="@car.Id">
+                                <th scope="col" class="text-center">@Model.Name</th>
                                 <td class="text-center text-break">@car.VIN</td>
                                 <td class="text-left">@car.Make</td>
                                 <td class="text-left">@car.Model</td>
-                                <td class="text-center">Edit</td>
-                                <td class="text-center">Delete</td>
+                                <td class="text-center">
+                                    <a asp-controller="VehicleServiceCars"
+                                       asp-action="EditVehicle"
+                                       asp-route-id="@car.Id"
+                                       asp-route-serviceId="@Model.Id"
+                                       asp-route-serviceName="@Model.Name"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Edit
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <form asp-controller="VehicleServiceCars"
+                                          asp-action="DeleteVehicle"
+                                          asp-route-id="@car.Id"
+                                          asp-route-serviceId="@Model.Id"
+                                          asp-route-serviceName="@Model.Name"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Delete this vehicle?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </td>
                             </tr>
                         }
                     </tbody>

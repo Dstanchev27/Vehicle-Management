@@ -1,4 +1,4 @@
-﻿@model VMAPP.Web.Models.VehicleServiceCars.AddVehicleViewModel
+@model VMAPP.Web.Models.VehicleServiceCars.EditVehicleViewModel
 @using VMAPP.Data.Models.Enums
 
 <link rel="stylesheet" href="~/css/addVehicle.css" asp-append-version="true" />
@@ -6,16 +6,18 @@
 <div class="table-wrapper">
     <div class="table-box">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Add Vehicle</h2>
+            <h2 class="mb-0">Edit Vehicle</h2>
         </div>
 
         <div class="card add-vehicle-card">
             <div class="card-body">
-                <form asp-controller="VehicleServiceCars" asp-action="AddVehicle" method="post" class="row g-3">
+                <form asp-controller="VehicleServiceCars" asp-action="EditVehicle" method="post" class="row g-3">
                     @Html.AntiForgeryToken()
-                    
-                    <input asp-for="ServiceName" hidden/>
-                    <input asp-for="ServiceId" hidden />
+
+                  
+                    <input asp-for="ServiceName" type="hidden" />
+                    <input asp-for="ServiceId" type="hidden" />
+                    <input asp-for="VehicleId" type="hidden" />
 
                     <div class="col-md-6">
                         <label asp-for="VIN" class="form-label"></label>
@@ -34,7 +36,7 @@
                         <input asp-for="CarModel" class="form-control" />
                         <span asp-validation-for="CarModel" class="text-danger"></span>
                     </div>
-                        
+
                     <div class="col-md-3">
                         <label asp-for="CreatedOnYear" class="form-label"></label>
                         <input asp-for="CreatedOnYear" type="number" class="form-control" step="1" min="1886" max="2100" />
@@ -54,7 +56,7 @@
                     </div>
 
                     <div class="col-12 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Add Vehicle</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
                         <a asp-controller="VehicleServiceCars" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>
