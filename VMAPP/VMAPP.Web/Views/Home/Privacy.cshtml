@@ -1,6 +1,40 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
+<link rel="stylesheet" href="~/css/privacy.css" asp-append-version="true" />
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="privacy-page container py-4">
+    <div class="privacy-card card shadow-sm">
+        <div class="card-body">
+            <header class="mb-3">
+                <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+                <p class="text-muted small mb-0">Last updated: @DateTime.UtcNow.ToString("yyyy-MM-dd")</p>
+            </header>
+
+            <p class="lead">This application respects your privacy. This page explains what data we collect and how we use it.</p>
+
+            <section class="mb-4">
+                <h2 class="h5">Data Collected</h2>
+                <ul>
+                    <li>Application usage logs (for diagnosing issues).</li>
+                    <li>Basic analytics (optional, configured separately).</li>
+                    <li>Data you explicitly enter into the application (vehicles, services, etc.).</li>
+                </ul>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5">How we use data</h2>
+                <p>
+                    Data is used to provide and improve the service, to diagnose problems, and to support feature functionality.
+                </p>
+            </section>
+
+            <section class="mb-0">
+                <h2 class="h5">Contact</h2>
+                <p>
+                    If you have questions about this policy, contact the site administrator.
+                </p>
+            </section>
+        </div>
+    </div>
+</div>

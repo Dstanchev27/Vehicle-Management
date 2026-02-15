@@ -3,10 +3,6 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "datatable@2.0.2",
-      "destination": "wwwroot/datatable/"
-    },
-    {
       "library": "datatables@1.10.21",
       "destination": "wwwroot/datatables/"
     }

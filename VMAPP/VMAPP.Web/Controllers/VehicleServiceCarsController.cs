@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using VMAPP.Data;
 using VMAPP.Data.Models;
 using VMAPP.Data.Models.Enums;
+using VMAPP.Web.Models.ServiceRecordModels;
 using VMAPP.Web.Models.VehicleServiceCars;
 using VMAPP.Web.Models.VehicleServiceModels;
 
@@ -19,7 +20,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(string serviceName = null)
+        public async Task<IActionResult> Index(string serviceName = null)
         {
             var model = new ServiceIndexViewModel();
 
@@ -28,7 +29,7 @@ namespace VMAPP.Web.Controllers
                 return View(model);
             }
 
-            model = _dbContext.VehicleServices
+            model = await _dbContext.VehicleServices
                 .Where(s => s.Name == serviceName)
                 .Select(s => new ServiceIndexViewModel
                 {
@@ -43,7 +44,7 @@ namespace VMAPP.Web.Controllers
                         CreatedOnYear = vs.Vehicle.CreatedOnYear,
                     }).ToList()
                 })
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (model == null)
             {
@@ -78,7 +79,7 @@ namespace VMAPP.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddVehicle(AddVehicleViewModel newVehicle)
+        public async Task<IActionResult> AddVehicle(AddVehicleViewModel newVehicle)
         {
             if (!ModelState.IsValid)
             {
@@ -105,8 +106,8 @@ namespace VMAPP.Web.Controllers
 
                 dbVehicle.VehicleVehicleServices.Add(vehicleServiceVehicle);
 
-                _dbContext.Vehicles.Add(dbVehicle);
-                _dbContext.SaveChanges();
+                await _dbContext.Vehicles.AddAsync(dbVehicle);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index), new { serviceName = newVehicle.ServiceName });
             }
             catch (DbUpdateException)
@@ -152,18 +153,20 @@ namespace VMAPP.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditVehicle(EditVehicleViewModel model, int id)
+        public async Task<IActionResult> EditVehicle(EditVehicleViewModel model, int id)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            var dbVehicle = _dbContext.Vehicles.FirstOrDefault(v => v.VehicleId == id);
+            var dbVehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.VehicleId == id);
+
             if (dbVehicle == null)
             {
                 return NotFound();
             }
+
             dbVehicle.VIN = model.VIN;
             dbVehicle.CarBrand = model.CarBrand;
             dbVehicle.CarModel = model.CarModel;
@@ -172,9 +175,50 @@ namespace VMAPP.Web.Controllers
             dbVehicle.VehicleType = model.VehicleType;
 
             _dbContext.Vehicles.Update(dbVehicle);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
+        }
+
+        //[HttpGet]
+        //public async Task<IActionResult> AddRecord(int id, int vehicleId)
+        //{
+        //    var record = await _dbContext.ServiceRecords
+        //        .AsNoTracking()
+        //        .FirstOrDefaultAsync(v => v.VehicleId == id);
+
+        //    if (record == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var model = new AddRecordViewModel()
+        //    {
+        //        Description = record.Description,
+        //        Cost = record.Cost
+        //    };
+
+        //    return View(model);
+        //}
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddRecord(AddRecordViewModel model, int id, int vehicleId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var dbRecord = new ServiceRecord()
+            {
+                Description = model.Description,
+                Cost = model.Cost,
+                VehicleId = vehicleId
+            };
+
+            await _dbContext.ServiceRecords.AddAsync(dbRecord);
+            await _dbContext.SaveChangesAsync();
+            return RedirectToAction(nameof(EditVehicle), new {vehicleId = model.VehicleId});
         }
 
         [HttpPost]

@@ -1,0 +1,42 @@
+.privacy-page {
+    max-width: 900px;
+    margin: 0 auto;
+    color: #23303b;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.privacy-card {
+    border: 1px solid rgba(35,48,59,0.06);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.privacy-card .card-body {
+    padding: 1.75rem;
+}
+
+.privacy-card h1,
+.privacy-card h2 {
+    color: #0b3a66;
+}
+
+.privacy-card .lead {
+    color: #354b59;
+    margin-bottom: 1rem;
+}
+
+.privacy-card ul {
+    padding-left: 1.15rem;
+}
+
+.privacy-card li {
+    margin-bottom: .45rem;
+}
+
+@media (max-width: 576px) {
+    .privacy-card .card-body {
+        padding: 1rem;
+    }
+    .privacy-page {
+        padding: 0 1rem;
+    }
+}

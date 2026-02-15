@@ -15,10 +15,10 @@ namespace VMAPP.Web.Controllers
             this._dbContext = dbContext;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var services = 
-                _dbContext.VehicleServices
+               await _dbContext.VehicleServices
                     .AsNoTracking()
                     .Select(s => new EditViewModel()
                     {
@@ -33,7 +33,7 @@ namespace VMAPP.Web.Controllers
                     })
                     .OrderBy(n => n.Name)
                     .ThenBy(cr => cr.CreatedOn)
-                    .ToList();
+                    .ToListAsync();
 
             return View(services);
         }
@@ -47,7 +47,7 @@ namespace VMAPP.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddService(AddServiceViewModel newService)
+        public async Task<IActionResult> AddService(AddServiceViewModel newService)
         {
             if (!ModelState.IsValid)
             {
@@ -67,8 +67,8 @@ namespace VMAPP.Web.Controllers
                     CreatedOn = DateTime.UtcNow,
                 };
 
-                _dbContext.VehicleServices.Add(dbService);
-                _dbContext.SaveChanges();
+                await _dbContext.VehicleServices.AddAsync(dbService);
+                await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception)
@@ -78,11 +78,11 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditService(int id)
+        public async Task<IActionResult> EditService(int id)
         {
-            var entity = _dbContext.VehicleServices
+            var entity = await _dbContext.VehicleServices
                 .AsNoTracking()
-                .FirstOrDefault(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (entity == null)
             {
@@ -106,14 +106,14 @@ namespace VMAPP.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditService(EditViewModel model)
+        public async Task<IActionResult> EditService(EditViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            var entity = _dbContext.VehicleServices.FirstOrDefault(s => s.Id == model.Id);
+            var entity = await _dbContext.VehicleServices.FirstOrDefaultAsync(s => s.Id == model.Id);
             if (entity == null)
             {
                 return RedirectToAction(nameof(Index));
@@ -127,16 +127,16 @@ namespace VMAPP.Web.Controllers
             entity.Description = model.Description;
 
             _dbContext.VehicleServices.Update(entity);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteService(int id)
+        public async Task<IActionResult> DeleteService(int id)
         {
-            var entity = _dbContext.VehicleServices.FirstOrDefault(s => s.Id == id);
+            var entity = await _dbContext.VehicleServices.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entity == null)
             {
@@ -144,7 +144,7 @@ namespace VMAPP.Web.Controllers
             }
 
             _dbContext.VehicleServices.Remove(entity);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

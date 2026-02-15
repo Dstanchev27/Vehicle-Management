@@ -21,11 +21,8 @@ namespace VMAPP.SandBox
                 })
                 .Build();
 
-            // Use DbContext
             using var scope = host.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
         }
-        
     }
 }
