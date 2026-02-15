@@ -7,11 +7,23 @@
 
     public class AddRecordViewModel
     {
-        public int ServiceRecordId { get; set; }
+        public int RecordId { get; set; }
+
+        [Required]
         public int VehicleId { get; set; }
 
-        public string Description { get; set; } = null!;
+        public int? ServiceId { get; set; }
+        public string? ServiceName { get; set; }
 
-        public decimal Cost { get; set; }
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime RecordDate { get; set; } = DateTime.UtcNow.Date;
+
+        [Required]
+        [Range(typeof(decimal), "0", "79228162514264337593543950335")]
+        public decimal RecordCost { get; set; }
+
+        [StringLength(1000)]
+        public string? Description { get; set; }
     }
 }

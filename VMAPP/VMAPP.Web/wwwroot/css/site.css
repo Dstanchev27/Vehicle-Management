@@ -14,11 +14,10 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
+    font-size: 12.8px;
 }
 
-/* ========================= */
-/* HEADER */
-/* ========================= */
+/* Header */
 
 .vmapp-header-fixed {
     position: fixed;
@@ -35,7 +34,8 @@ body {
     padding: 0 30px; 
     height: 90px;
     display: flex;
-    align-items: center; 
+    align-items: center;
+    font-size: 16px;
 }
 
 #header-image {
@@ -44,10 +44,7 @@ body {
     object-fit: contain;
 }
 
-
-/* ========================= */
-/* FOOTER */
-/* ========================= */
+/* Footer */
 
 .vmapp-footer-fixed {
     position: fixed;
@@ -60,11 +57,10 @@ body {
     display: flex;
     align-items: center;
     z-index: 1050;
+    font-size: 16px;
 }
 
-/* ========================= */
-/* CONTENT */
-/* ========================= */
+/* Content */
 
 .vmapp-content {
     padding-top: 110px; 

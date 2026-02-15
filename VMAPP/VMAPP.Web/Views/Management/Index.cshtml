@@ -53,17 +53,14 @@
                     </td>
 
                     <td class="text-center action-col">
-                        <form asp-controller="Management"
-                              asp-action="DeleteService"
-                              asp-route-id="@service.Id"
-                              method="post"
-                              class="d-inline"
-                              onsubmit="return confirm('Delete this service?');">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                Delete
-                            </button>
-                        </form>
+                        <button type="button"
+                                class="btn btn-sm btn-danger btn-delete-service"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteServiceModal"
+                                data-service-id="@service.Id"
+                                data-service-name="@service.Name">
+                            Delete
+                        </button>
                     </td>
                 </tr>
             }
@@ -71,3 +68,30 @@
         </table>
     </div>
 </div>
+
+
+<div class="modal fade" id="deleteServiceModal" tabindex="-1" aria-labelledby="deleteServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteServiceModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the service "<span id="serviceName"></span>"?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteServiceForm" asp-controller="Management" asp-action="DeleteService" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="serviceId" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/manageServices.js" asp-append-version="true"></script>
+}

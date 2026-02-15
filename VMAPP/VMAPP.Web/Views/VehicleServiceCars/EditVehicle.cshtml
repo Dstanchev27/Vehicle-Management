@@ -1,23 +1,29 @@
 @model VMAPP.Web.Models.VehicleServiceCars.EditVehicleViewModel
 @using VMAPP.Data.Models.Enums
 
-<link rel="stylesheet" href="~/css/addVehicle.css" asp-append-version="true" />
 
 <div class="table-wrapper">
     <div class="table-box">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Edit Vehicle</h2>
+            <div>
+                <h2 class="mb-0">Edit Vehicle</h2>
+                @if (!string.IsNullOrEmpty(Model?.ServiceName))
+                {
+                    <small class="text-muted">Service: @Model.ServiceName</small>
+                }
+            </div>
         </div>
 
-        <div class="card add-vehicle-card">
+        <div class="card add-vehicle-card mb-4">
             <div class="card-body">
                 <form asp-controller="VehicleServiceCars" asp-action="EditVehicle" method="post" class="row g-3">
                     @Html.AntiForgeryToken()
 
-                  
                     <input asp-for="ServiceName" type="hidden" />
                     <input asp-for="ServiceId" type="hidden" />
                     <input asp-for="VehicleId" type="hidden" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
                     <div class="col-md-6">
                         <label asp-for="VIN" class="form-label"></label>
@@ -26,19 +32,19 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="CarBrand" class="form-label"></label>
+                        <label asp-for="CarBrand" class="form-label">Car Brand</label>
                         <input asp-for="CarBrand" class="form-control" />
                         <span asp-validation-for="CarBrand" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="CarModel" class="form-label"></label>
+                        <label asp-for="CarModel" class="form-label">Car Model</label>
                         <input asp-for="CarModel" class="form-control" />
                         <span asp-validation-for="CarModel" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
-                        <label asp-for="CreatedOnYear" class="form-label"></label>
+                        <label asp-for="CreatedOnYear" class="form-label">Created On Year</label>
                         <input asp-for="CreatedOnYear" type="number" class="form-control" step="1" min="1886" max="2100" />
                         <span asp-validation-for="CreatedOnYear" class="text-danger"></span>
                     </div>
@@ -50,22 +56,142 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="VehicleType" class="form-label"></label>
+                        <label asp-for="VehicleType" class="form-label">Vehicle Type</label>
                         <select asp-for="VehicleType" class="form-select" asp-items="Html.GetEnumSelectList<VehicleType>()"></select>
                         <span asp-validation-for="VehicleType" class="text-danger"></span>
                     </div>
 
                     <div class="col-12 d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Save changes</button>
-                        <a asp-controller="VehicleServiceCars" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <a asp-controller="VehicleServiceCars" asp-action="Index" asp-route-serviceName="@Model.ServiceName" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Service Records</h5>
+                <div>
+                    <button class="btn btn-sm btn-primary ms-2" id="btnAddRecord" data-bs-toggle="modal" data-bs-target="#addEditRecordModal">
+                        Add Service Record
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body pt-0">
+                <div class="table-responsive">
+                    <table id="serviceRecordsTable" class="datatable table table-hover table-striped table-bordered w-100">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center">Date</th>
+                                <th class="text-center">Cost</th>
+                                <th class="text-left">Description</th>
+                                <th class="text-center">Edit</th>
+                                <th class="text-center">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.ServiceRecords != null)
+                            {
+                                foreach (var r in Model.ServiceRecords)
+                                {
+                                    <tr data-record-id="@r.RecordId"
+                                        data-record-date="@r.RecordDate.ToString("yyyy-MM-dd")"
+                                        data-record-cost="@r.RecordCost.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                        data-record-desc="@Html.Raw(System.Net.WebUtility.HtmlEncode(r.Description))">
+                                        <td class="text-center">@r.RecordDate.ToString("yyyy-MM-dd")</td>
+                                        <td class="text-center">@r.RecordCost.ToString("F2")</td>
+                                        <td class="text-left text-break">@r.Description</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit-record" data-bs-toggle="modal" data-bs-target="#addEditRecordModal" type="button">
+                                                Edit
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-danger btn-delete-record" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" type="button">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="addEditRecordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="recordForm" asp-controller="VehicleServiceCars" asp-action="AddRecord" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recordModalTitle">Add Service Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="RecordVehicleId" name="VehicleId" value="@Model.VehicleId" />
+                    <input type="hidden" id="RecordServiceId" name="ServiceId" value="@Model.ServiceId" />
+                    <input type="hidden" id="RecordServiceName" name="ServiceName" value="@Model.ServiceName" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label for="RecordDate" class="form-label">Date</label>
+                        <input id="RecordDate" name="RecordDate" type="date" class="form-control" required />
+                        <span class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Cost" class="form-label">Cost</label>
+                        <input id="Cost" name="RecordCost" type="text" inputmode="decimal" class="form-control" required />
+                        <div class="cost-error text-danger small" style="display: none;"></div>
+                        <small class="text-muted d-block mt-1">Enter amount as 10.50 or 10,50</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Description</label>
+                        <textarea id="Description" name="Description" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="recordSaveBtn" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteRecordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="deleteRecordForm" asp-controller="VehicleServiceCars" asp-action="DeleteRecord" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Service Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this service record?</p>
+                    <input type="hidden" id="DeleteRecordId" name="id" />
+                    <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
+                    <input type="hidden" name="serviceName" value="@Model.ServiceName" />
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Yes, delete</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/vehicleServiceRecords.js" asp-append-version="true"></script>
 }

@@ -136,11 +136,17 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteService(int id)
         {
-            var entity = await _dbContext.VehicleServices.FirstOrDefaultAsync(s => s.Id == id);
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var entity = await _dbContext.VehicleServices
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (entity == null)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
 
             _dbContext.VehicleServices.Remove(entity);

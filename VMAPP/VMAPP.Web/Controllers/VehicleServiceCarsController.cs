@@ -128,7 +128,7 @@ namespace VMAPP.Web.Controllers
             var entity = await _dbContext.Vehicles
                 .AsNoTracking()
                 .Include(v => v.VehicleVehicleServices)
-                .FirstOrDefaultAsync(v => v.VehicleId == id)!;
+                .FirstOrDefaultAsync(v => v.VehicleId == id);
 
             if (entity == null)
             {
@@ -147,6 +147,24 @@ namespace VMAPP.Web.Controllers
                 VehicleType = entity.VehicleType,
                 ServiceName = serviceName
             };
+
+            var records = await _dbContext.ServiceRecords
+                .AsNoTracking()
+                .Where(r => r.VehicleId == id)
+                .OrderByDescending(r => r.ServiceDate)
+                .Select(r => new AddRecordViewModel
+                {
+                    RecordId = r.ServiceRecordId,
+                    VehicleId = r.VehicleId,
+                    ServiceId = serviceId,
+                    ServiceName = serviceName,
+                    RecordDate = r.ServiceDate,
+                    RecordCost = r.Cost,
+                    Description = r.Description
+                })
+                .ToListAsync();
+
+            model.ServiceRecords = records ?? new List<AddRecordViewModel>();
 
             return View(model);
         }
@@ -170,7 +188,7 @@ namespace VMAPP.Web.Controllers
             dbVehicle.VIN = model.VIN;
             dbVehicle.CarBrand = model.CarBrand;
             dbVehicle.CarModel = model.CarModel;
-            dbVehicle.CreatedOnYear = model.CreatedOnYear;
+            dbVehicle.CreatedOnYear = model.CreatedOnYear ?? DateTime.Now.Year;
             dbVehicle.Color = model.Color;
             dbVehicle.VehicleType = model.VehicleType;
 
@@ -180,45 +198,78 @@ namespace VMAPP.Web.Controllers
             return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> AddRecord(int id, int vehicleId)
-        //{
-        //    var record = await _dbContext.ServiceRecords
-        //        .AsNoTracking()
-        //        .FirstOrDefaultAsync(v => v.VehicleId == id);
-
-        //    if (record == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var model = new AddRecordViewModel()
-        //    {
-        //        Description = record.Description,
-        //        Cost = record.Cost
-        //    };
-
-        //    return View(model);
-        //}
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddRecord(AddRecordViewModel model, int id, int vehicleId)
+        public async Task<IActionResult> AddRecord(AddRecordViewModel model)
         {
+            if (model == null)
+            {
+                return BadRequest();
+            }
+
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
             }
-            var dbRecord = new ServiceRecord()
+
+            var dbRecord = new ServiceRecord
             {
+                ServiceDate = model.RecordDate,
+                Cost = model.RecordCost,
                 Description = model.Description,
-                Cost = model.Cost,
-                VehicleId = vehicleId
+                VehicleId = model.VehicleId
             };
 
             await _dbContext.ServiceRecords.AddAsync(dbRecord);
             await _dbContext.SaveChangesAsync();
-            return RedirectToAction(nameof(EditVehicle), new {vehicleId = model.VehicleId});
+
+            return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRecord(int id, AddRecordViewModel model)
+        {
+            if (model == null || id == 0)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
+            }
+
+            var dbRecord = await _dbContext.ServiceRecords.FirstOrDefaultAsync(r => r.ServiceRecordId == id);
+            if (dbRecord == null)
+            {
+                return NotFound();
+            }
+
+            dbRecord.ServiceDate = model.RecordDate;
+            dbRecord.Cost = model.RecordCost;
+            dbRecord.Description = model.Description;
+
+            _dbContext.ServiceRecords.Update(dbRecord);
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRecord(int id, int vehicleId, string serviceName)
+        {
+            var dbRecord = await _dbContext.ServiceRecords.FirstOrDefaultAsync(r => r.ServiceRecordId == id);
+            if (dbRecord == null)
+            {
+                return NotFound();
+            }
+
+            _dbContext.ServiceRecords.Remove(dbRecord);
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction(nameof(EditVehicle), new { id = vehicleId, serviceId = (int?)null, serviceName });
         }
 
         [HttpPost]

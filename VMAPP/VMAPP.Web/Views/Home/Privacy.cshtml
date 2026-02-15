@@ -1,40 +1,67 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<link rel="stylesheet" href="~/css/privacy.css" asp-append-version="true" />
+    
 
-<div class="privacy-page container py-4">
-    <div class="privacy-card card shadow-sm">
-        <div class="card-body">
-            <header class="mb-3">
-                <h1 class="h3 mb-0">@ViewData["Title"]</h1>
-                <p class="text-muted small mb-0">Last updated: @DateTime.UtcNow.ToString("yyyy-MM-dd")</p>
-            </header>
+<div class="privacy-wrapper">
+    <div class="privacy-page">
 
-            <p class="lead">This application respects your privacy. This page explains what data we collect and how we use it.</p>
+        <h2>Privacy Policy</h2>
 
-            <section class="mb-4">
-                <h2 class="h5">Data Collected</h2>
-                <ul>
-                    <li>Application usage logs (for diagnosing issues).</li>
-                    <li>Basic analytics (optional, configured separately).</li>
-                    <li>Data you explicitly enter into the application (vehicles, services, etc.).</li>
-                </ul>
-            </section>
+        <p class="effective-date">
+            Effective Date: @DateTime.UtcNow.ToString("MMMM dd, yyyy")
+        </p>
 
-            <section class="mb-4">
-                <h2 class="h5">How we use data</h2>
-                <p>
-                    Data is used to provide and improve the service, to diagnose problems, and to support feature functionality.
-                </p>
-            </section>
+        <hr />
 
-            <section class="mb-0">
-                <h2 class="h5">Contact</h2>
-                <p>
-                    If you have questions about this policy, contact the site administrator.
-                </p>
-            </section>
-        </div>
+        <section>
+            <h4>1. Overview</h4>
+            <p>
+                The Vehicle Management System securely manages vehicle data,
+                insurance records, inspection details, and service history.
+                We are committed to protecting personal data and ensuring system security.
+            </p>
+        </section>
+
+        <section>
+            <h4>2. Information We Collect</h4>
+            <ul>
+                <li>User account information (name, email, organization, role)</li>
+                <li>Vehicle information (VIN, registration number, model, year)</li>
+                <li>Insurance policy details</li>
+                <li>Technical inspection records</li>
+                <li>Vehicle service history</li>
+                <li>System logs and audit records</li>
+            </ul>
+        </section>
+
+        <section>
+            <h4>3. Purpose of Processing</h4>
+            <ul>
+                <li>Managing vehicle lifecycle data</li>
+                <li>Insurance validation and tracking</li>
+                <li>Inspection and compliance monitoring</li>
+                <li>Secure role-based access control</li>
+                <li>Audit and regulatory requirements</li>
+            </ul>
+        </section>
+
+        <section>
+            <h4>4. Security Measures</h4>
+            <ul>
+                <li>Encrypted HTTPS communication</li>
+                <li>Secure authentication and authorization</li>
+                <li>Password hashing</li>
+                <li>Audit logging and monitoring</li>
+            </ul>
+        </section>
+
+        <section>
+            <h4>5. Contact</h4>
+            <p>
+                For privacy-related inquiries, please contact the system administrator.
+            </p>
+        </section>
+
     </div>
 </div>

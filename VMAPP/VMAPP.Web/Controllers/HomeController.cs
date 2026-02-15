@@ -22,6 +22,8 @@ namespace VMAPP.Web.Controllers
 
         public IActionResult Privacy()
         {
+            ViewData["Title"] = "Privacy Policy";
+            ViewData["EffectiveDate"] = DateTime.UtcNow.ToString("MMMM dd, yyyy");
             return View();
         }
 

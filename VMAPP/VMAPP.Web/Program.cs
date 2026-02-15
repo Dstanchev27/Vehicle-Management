@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 namespace VMAPP.Web
 {
@@ -16,7 +18,17 @@ namespace VMAPP.Web
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
+            var supportedCultures = new[] { new CultureInfo("en-US") };
+            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            {
+                options.DefaultRequestCulture = new RequestCulture("en-US");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
+
             var app = builder.Build();
+
+            app.UseRequestLocalization();
 
             if (!app.Environment.IsDevelopment())
             {

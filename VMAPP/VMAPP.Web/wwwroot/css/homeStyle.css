@@ -5,3 +5,75 @@
     align-items: center;
     height: 40vh;
 }
+
+.privacy-wrapper {
+    padding: 50px 15px;
+}
+
+.privacy-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+    .privacy-page h2 {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    .privacy-page h4 {
+        margin-top: 30px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .privacy-page p {
+        color: #4b5563;
+        line-height: 1.7;
+        font-size: 15px;
+    }
+
+.effective-date {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.privacy-page ul {
+    padding-left: 22px;
+}
+
+    .privacy-page ul li {
+        margin-bottom: 6px;
+        color: #4b5563;
+    }
+
+.privacy-page hr {
+    margin: 25px 0;
+    border: none;
+    height: 1px;
+    background-color: #e5e7eb;
+}
+
+.privacy-wrapper {
+    padding: 50px 15px;
+}
+
+.privacy-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+    .privacy-page {
+        padding: 25px;
+    }
+}
