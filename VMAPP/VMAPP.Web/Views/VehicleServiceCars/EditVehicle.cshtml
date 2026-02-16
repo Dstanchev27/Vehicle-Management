@@ -97,10 +97,10 @@
                                 foreach (var r in Model.ServiceRecords)
                                 {
                                     <tr data-record-id="@r.RecordId"
-                                        data-record-date="@r.RecordDate.ToString("yyyy-MM-dd")"
+                                        data-record-date="@r.ServiceDate.ToString("yyyy-MM-dd")"
                                         data-record-cost="@r.RecordCost.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                                         data-record-desc="@Html.Raw(System.Net.WebUtility.HtmlEncode(r.Description))">
-                                        <td class="text-center">@r.RecordDate.ToString("yyyy-MM-dd")</td>
+                                        <td class="text-center">@r.ServiceDate.ToString("yyyy-MM-dd")</td>
                                         <td class="text-center">@r.RecordCost.ToString("F2")</td>
                                         <td class="text-left text-break">@r.Description</td>
                                         <td class="text-center">
@@ -143,7 +143,7 @@
 
                     <div class="mb-3">
                         <label for="RecordDate" class="form-label">Date</label>
-                        <input id="RecordDate" name="RecordDate" type="date" class="form-control" required />
+                        <input id="RecordDate" name="ServiceDate" type="date" class="form-control" required />
                         <span class="text-danger small"></span>
                     </div>
 

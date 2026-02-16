@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-using VMAPP.Data;
-using VMAPP.Data.Models;
 using VMAPP.Data.Models.Enums;
+using VMAPP.Services.DTOs;
+using VMAPP.Services.Interfaces;
 using VMAPP.Web.Models.ServiceRecordModels;
 using VMAPP.Web.Models.VehicleServiceCars;
 using VMAPP.Web.Models.VehicleServiceModels;
@@ -12,11 +11,11 @@ namespace VMAPP.Web.Controllers
 {
     public class VehicleServiceCarsController : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IVSCarsService _vsCarsService;
 
-        public VehicleServiceCarsController(ApplicationDbContext dbContext)
+        public VehicleServiceCarsController(IVSCarsService vsCarsService)
         {
-            this._dbContext = dbContext;
+            _vsCarsService = vsCarsService;
         }
 
         [HttpGet]
@@ -29,27 +28,24 @@ namespace VMAPP.Web.Controllers
                 return View(model);
             }
 
-            model = await _dbContext.VehicleServices
-                .Where(s => s.Name == serviceName)
-                .Select(s => new ServiceIndexViewModel
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Cars = s.VehicleVehicleServices.Select(vs => new VehicleServiceCarModel
-                    {
-                        Id = vs.Vehicle.VehicleId,
-                        VIN = vs.Vehicle.VIN,
-                        Make = vs.Vehicle.CarModel,
-                        Model = vs.Vehicle.CarBrand,
-                        CreatedOnYear = vs.Vehicle.CreatedOnYear,
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
-
-            if (model == null)
+            var serviceDto = await _vsCarsService.GetServiceWithVehiclesByNameAsync(serviceName);
+            if (serviceDto == null)
             {
-                model = new ServiceIndexViewModel();
+                return View(model);
             }
+
+            model.Id = serviceDto.Id;
+            model.Name = serviceDto.Name;
+            model.Cars = serviceDto.Vehicles
+                .Select(v => new VehicleServiceCarModel
+                {
+                    Id = v.Id,
+                    VIN = v.VIN,
+                    Make = v.CarBrand,
+                    Model = v.CarModel,
+                    CreatedOnYear = v.CreatedOnYear
+                })
+                .ToList();
 
             return View(model);
         }
@@ -88,36 +84,22 @@ namespace VMAPP.Web.Controllers
 
             try
             {
-                var dbVehicle = new Vehicle()
+                var vehicleDto = new VehicleDto
                 {
                     VIN = newVehicle.VIN,
                     CarBrand = newVehicle.CarBrand,
                     CarModel = newVehicle.CarModel,
                     CreatedOnYear = newVehicle.CreatedOnYear,
                     Color = newVehicle.Color,
-                    VehicleType = newVehicle.VehicleType
+                    VehicleType = (int)newVehicle.VehicleType
                 };
 
-                var vehicleServiceVehicle = new VehicleVehicleService()
-                {
-                    VehicleServiceId = newVehicle.ServiceId,
-                    Vehicle = dbVehicle
-                };
-
-                dbVehicle.VehicleVehicleServices.Add(vehicleServiceVehicle);
-
-                await _dbContext.Vehicles.AddAsync(dbVehicle);
-                await _dbContext.SaveChangesAsync();
+                await _vsCarsService.AddVehicleToServiceAsync(newVehicle.ServiceId, vehicleDto);
                 return RedirectToAction(nameof(Index), new { serviceName = newVehicle.ServiceName });
             }
-            catch (DbUpdateException)
+            catch
             {
                 ModelState.AddModelError("", "Unable to save vehicle to the database. Please try again.");
-                return View(newVehicle);
-            }
-            catch (Exception)
-            {
-                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
                 return View(newVehicle);
             }
         }
@@ -125,46 +107,38 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> EditVehicle(int id, int serviceId, string serviceName)
         {
-            var entity = await _dbContext.Vehicles
-                .AsNoTracking()
-                .Include(v => v.VehicleVehicleServices)
-                .FirstOrDefaultAsync(v => v.VehicleId == id);
-
-            if (entity == null)
+            var details = await _vsCarsService.GetVehicleDetailsAsync(id);
+            if (details == null)
             {
                 return NotFound();
             }
 
+            var v = details.Vehicle;
+
             var model = new EditVehicleViewModel()
             {
                 ServiceId = serviceId,
-                VehicleId = entity.VehicleId,
-                VIN = entity.VIN,
-                CarBrand = entity.CarBrand,
-                CarModel = entity.CarModel,
-                CreatedOnYear = entity.CreatedOnYear,
-                Color = entity.Color,
-                VehicleType = entity.VehicleType,
-                ServiceName = serviceName
+                VehicleId = v.Id,
+                VIN = v.VIN,
+                CarBrand = v.CarBrand,
+                CarModel = v.CarModel,
+                CreatedOnYear = v.CreatedOnYear,
+                Color = v.Color,
+                VehicleType = (VehicleType)v.VehicleType,
+                ServiceName = serviceName,
+                ServiceRecords = details.ServiceRecords
+                    .Select(r => new AddRecordViewModel
+                    {
+                        RecordId = r.Id,
+                        VehicleId = r.VehicleId,
+                        ServiceId = serviceId,
+                        ServiceName = serviceName,
+                        ServiceDate = r.ServiceDate,
+                        RecordCost = r.Cost,
+                        Description = r.Description
+                    })
+                    .ToList()
             };
-
-            var records = await _dbContext.ServiceRecords
-                .AsNoTracking()
-                .Where(r => r.VehicleId == id)
-                .OrderByDescending(r => r.ServiceDate)
-                .Select(r => new AddRecordViewModel
-                {
-                    RecordId = r.ServiceRecordId,
-                    VehicleId = r.VehicleId,
-                    ServiceId = serviceId,
-                    ServiceName = serviceName,
-                    RecordDate = r.ServiceDate,
-                    RecordCost = r.Cost,
-                    Description = r.Description
-                })
-                .ToListAsync();
-
-            model.ServiceRecords = records ?? new List<AddRecordViewModel>();
 
             return View(model);
         }
@@ -178,22 +152,22 @@ namespace VMAPP.Web.Controllers
                 return View(model);
             }
 
-            var dbVehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.VehicleId == id);
+            var vehicleDto = new VehicleDto
+            {
+                Id = id,
+                VIN = model.VIN,
+                CarBrand = model.CarBrand,
+                CarModel = model.CarModel,
+                CreatedOnYear = model.CreatedOnYear ?? DateTime.Now.Year,
+                Color = model.Color,
+                VehicleType = (int)model.VehicleType
+            };
 
-            if (dbVehicle == null)
+            var updated = await _vsCarsService.UpdateVehicleAsync(vehicleDto);
+            if (!updated)
             {
                 return NotFound();
             }
-
-            dbVehicle.VIN = model.VIN;
-            dbVehicle.CarBrand = model.CarBrand;
-            dbVehicle.CarModel = model.CarModel;
-            dbVehicle.CreatedOnYear = model.CreatedOnYear ?? DateTime.Now.Year;
-            dbVehicle.Color = model.Color;
-            dbVehicle.VehicleType = model.VehicleType;
-
-            _dbContext.Vehicles.Update(dbVehicle);
-            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
         }
@@ -212,16 +186,15 @@ namespace VMAPP.Web.Controllers
                 return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
             }
 
-            var dbRecord = new ServiceRecord
+            var recordDto = new ServiceRecordDto
             {
-                ServiceDate = model.RecordDate,
+                VehicleId = model.VehicleId,
+                ServiceDate = model.ServiceDate,
                 Cost = model.RecordCost,
-                Description = model.Description,
-                VehicleId = model.VehicleId
+                Description = model.Description
             };
 
-            await _dbContext.ServiceRecords.AddAsync(dbRecord);
-            await _dbContext.SaveChangesAsync();
+            await _vsCarsService.AddServiceRecordAsync(recordDto);
 
             return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
         }
@@ -240,18 +213,20 @@ namespace VMAPP.Web.Controllers
                 return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
             }
 
-            var dbRecord = await _dbContext.ServiceRecords.FirstOrDefaultAsync(r => r.ServiceRecordId == id);
-            if (dbRecord == null)
+            var recordDto = new ServiceRecordDto
+            {
+                Id = id,
+                VehicleId = model.VehicleId,
+                ServiceDate = model.ServiceDate,
+                Cost = model.RecordCost,
+                Description = model.Description
+            };
+
+            var updated = await _vsCarsService.UpdateServiceRecordAsync(recordDto);
+            if (!updated)
             {
                 return NotFound();
             }
-
-            dbRecord.ServiceDate = model.RecordDate;
-            dbRecord.Cost = model.RecordCost;
-            dbRecord.Description = model.Description;
-
-            _dbContext.ServiceRecords.Update(dbRecord);
-            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(EditVehicle), new { id = model.VehicleId, serviceId = model.ServiceId, serviceName = model.ServiceName });
         }
@@ -260,37 +235,16 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteRecord(int id, int vehicleId, string serviceName)
         {
-            var dbRecord = await _dbContext.ServiceRecords.FirstOrDefaultAsync(r => r.ServiceRecordId == id);
-            if (dbRecord == null)
-            {
-                return NotFound();
-            }
-
-            _dbContext.ServiceRecords.Remove(dbRecord);
-            await _dbContext.SaveChangesAsync();
-
+            await _vsCarsService.DeleteServiceRecordAsync(id);
             return RedirectToAction(nameof(EditVehicle), new { id = vehicleId, serviceId = (int?)null, serviceName });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteVehicle(EditVehicleViewModel model,int id)
+        public async Task<IActionResult> DeleteVehicle(EditVehicleViewModel model, int id)
         {
-            var vehicle = _dbContext.Vehicles.FirstOrDefault(v => v.VehicleId == id);
-            if (vehicle == null)
-            {
-                return NotFound();
-            }
-            try
-            {
-                _dbContext.Vehicles.Remove(vehicle);
-                _dbContext.SaveChanges();
-                return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
-            }
-            catch (Exception)
-            {
-                return RedirectToAction(nameof(Index));
-            }
+            await _vsCarsService.DeleteVehicleAsync(id);
+            return RedirectToAction(nameof(Index), new { serviceName = model.ServiceName });
         }
     }
 }

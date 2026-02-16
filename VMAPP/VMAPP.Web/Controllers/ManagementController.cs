@@ -1,39 +1,36 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using VMAPP.Data;
-using VMAPP.Data.Models;
+using VMAPP.Services.DTOs;
+using VMAPP.Services.Interfaces;
 using VMAPP.Web.Models.VehicleServiceModels;
 
 namespace VMAPP.Web.Controllers
 {
     public class ManagementController : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IVSManagementService _vsManagementService;
 
-        public ManagementController(ApplicationDbContext dbContext)
+        public ManagementController(IVSManagementService vsManagementService)
         {
-            this._dbContext = dbContext;
+            _vsManagementService = vsManagementService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var services = 
-               await _dbContext.VehicleServices
-                    .AsNoTracking()
-                    .Select(s => new EditViewModel()
-                    {
-                        Id = s.Id,
-                        Name = s.Name,
-                        Description = s.Description,
-                        CreatedOn = s.CreatedOn,
-                        City = s.City,
-                        Address = s.Address,
-                        Email = s.Email,
-                        Phone = s.Phone
-                    })
-                    .OrderBy(n => n.Name)
-                    .ThenBy(cr => cr.CreatedOn)
-                    .ToListAsync();
+            var dtos = await _vsManagementService.GetAllAsync();
+
+            var services = dtos
+                .Select(s => new EditViewModel
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Description = s.Description,
+                    CreatedOn = s.CreatedOn,
+                    City = s.City,
+                    Address = s.Address,
+                    Email = s.Email,
+                    Phone = s.Phone
+                })
+                .ToList();
 
             return View(services);
         }
@@ -56,19 +53,18 @@ namespace VMAPP.Web.Controllers
 
             try
             {
-                var dbService = new VehicleService()
+                var dto = new VehicleServiceDto
                 {
-                    Address = newService.Address,
-                    City = newService.City,
-                    Description = newService.Description,
-                    Email = newService.Email,
                     Name = newService.Name,
+                    City = newService.City,
+                    Address = newService.Address,
+                    Email = newService.Email,
                     Phone = newService.Phone,
-                    CreatedOn = DateTime.UtcNow,
+                    Description = newService.Description,
+                    CreatedOn = DateTime.UtcNow
                 };
 
-                await _dbContext.VehicleServices.AddAsync(dbService);
-                await _dbContext.SaveChangesAsync();
+                await _vsManagementService.CreateAsync(dto);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception)
@@ -80,25 +76,22 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> EditService(int id)
         {
-            var entity = await _dbContext.VehicleServices
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (entity == null)
+            var dto = await _vsManagementService.GetByIdAsync(id);
+            if (dto == null)
             {
                 return RedirectToAction(nameof(Index));
             }
 
             var model = new EditViewModel
             {
-                Id = entity.Id,
-                Name = entity.Name,
-                City = entity.City,
-                Address = entity.Address,
-                Email = entity.Email,
-                Phone = entity.Phone,
-                Description = entity.Description,
-                CreatedOn = entity.CreatedOn
+                Id = dto.Id,
+                Name = dto.Name,
+                City = dto.City,
+                Address = dto.Address,
+                Email = dto.Email,
+                Phone = dto.Phone,
+                Description = dto.Description,
+                CreatedOn = dto.CreatedOn
             };
 
             return View(model);
@@ -113,21 +106,23 @@ namespace VMAPP.Web.Controllers
                 return View(model);
             }
 
-            var entity = await _dbContext.VehicleServices.FirstOrDefaultAsync(s => s.Id == model.Id);
-            if (entity == null)
+            var dto = new VehicleServiceDto
+            {
+                Id = model.Id,
+                Name = model.Name,
+                City = model.City,
+                Address = model.Address,
+                Email = model.Email,
+                Phone = model.Phone,
+                Description = model.Description,
+                CreatedOn = model.CreatedOn
+            };
+
+            var updated = await _vsManagementService.UpdateAsync(dto);
+            if (!updated)
             {
                 return RedirectToAction(nameof(Index));
             }
-
-            entity.Name = model.Name;
-            entity.City = model.City;
-            entity.Address = model.Address;
-            entity.Email = model.Email;
-            entity.Phone = model.Phone;
-            entity.Description = model.Description;
-
-            _dbContext.VehicleServices.Update(entity);
-            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
@@ -136,22 +131,7 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteService(int id)
         {
-            if (id <= 0)
-            {
-                return BadRequest();
-            }
-
-            var entity = await _dbContext.VehicleServices
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (entity == null)
-            {
-                return NotFound();
-            }
-
-            _dbContext.VehicleServices.Remove(entity);
-            await _dbContext.SaveChangesAsync();
-
+            await _vsManagementService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
     }

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using VMAPP.Services;
+using VMAPP.Services.Interfaces;
 
 namespace VMAPP.Web
 {
@@ -17,6 +19,9 @@ namespace VMAPP.Web
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            builder.Services.AddScoped<IVSManagementService, VSManagementService>();
+            builder.Services.AddScoped<IVSCarsService, VSCarsService>();
 
             var supportedCultures = new[] { new CultureInfo("en-US") };
             builder.Services.Configure<RequestLocalizationOptions>(options =>

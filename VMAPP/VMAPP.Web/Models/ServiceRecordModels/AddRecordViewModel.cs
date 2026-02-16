@@ -17,7 +17,7 @@
 
         [Required]
         [DataType(DataType.Date)]
-        public DateTime RecordDate { get; set; } = DateTime.UtcNow.Date;
+        public DateTime ServiceDate { get; set; } = DateTime.UtcNow.Date;
 
         [Required]
         [Range(typeof(decimal), "0", "79228162514264337593543950335")]

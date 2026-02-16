@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VMAPP.Data\VMAPP.Data.csproj" />
+    <ProjectReference Include="..\VMAPP.Services\VMAPP.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
