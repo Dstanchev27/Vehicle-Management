@@ -17,25 +17,27 @@ namespace VMAPP.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configure VIN as unique
+            modelBuilder.Entity<Models.Vehicle>()
+                .HasIndex(v => v.VIN)
+                .IsUnique();
 
-            modelBuilder.Entity<Models.VehicleVehicleService>()
-                .HasKey(vvs => new { vvs.VehicleId, vvs.VehicleServiceId });
-
-            modelBuilder.Entity<Models.VehicleVehicleService>()
-                .HasOne(vvs => vvs.VehicleService)
-                .WithMany(vs => vs.VehicleVehicleServices)
-                .HasForeignKey(vvs => vvs.VehicleServiceId);
-
-            modelBuilder.Entity<Models.VehicleVehicleService>()
-                .HasOne(vvs => vvs.Vehicle)
-                .WithMany(v => v.VehicleVehicleServices)
-                .HasForeignKey(vvs => vvs.VehicleId);
-
+            // Configure ServiceRecord relationships
             modelBuilder.Entity<ServiceRecord>(entity =>
             {
                 entity.Property(p => p.Cost)
                     .HasColumnType("decimal(18,2)")
                     .IsRequired();
+
+                entity.HasOne(sr => sr.Vehicle)
+                    .WithMany(v => v.ServiceRecords)
+                    .HasForeignKey(sr => sr.VehicleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(sr => sr.VehicleService)
+                    .WithMany(vs => vs.ServiceRecords)
+                    .HasForeignKey(sr => sr.VehicleServiceId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             base.OnModelCreating(modelBuilder);
@@ -44,6 +46,5 @@ namespace VMAPP.Data
         public DbSet<Models.Vehicle> Vehicles { get; set; } = null!;
         public DbSet<Models.ServiceRecord> ServiceRecords { get; set; } = null!;
         public DbSet<Models.VehicleService> VehicleServices { get; set; } = null!;
-        public DbSet<Models.VehicleVehicleService> VehicleVehicleServices { get; set; } = null!;
     }
 }

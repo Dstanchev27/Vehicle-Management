@@ -12,7 +12,9 @@
         [Required]
         public int VehicleId { get; set; }
 
+        [Required]
         public int? ServiceId { get; set; }
+
         public string? ServiceName { get; set; }
 
         [Required]

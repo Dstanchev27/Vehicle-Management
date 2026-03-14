@@ -30,16 +30,18 @@ namespace VMAPP.Services
                 {
                     Id = s.Id,
                     Name = s.Name,
-                    Vehicles = s.VehicleVehicleServices
-                        .Select(vs => new VehicleDto
+                    Vehicles = s.ServiceRecords
+                        .Select(sr => sr.Vehicle)
+                        .Distinct()
+                        .Select(v => new VehicleDto
                         {
-                            Id = vs.Vehicle.VehicleId,
-                            VIN = vs.Vehicle.VIN,
-                            CarBrand = vs.Vehicle.CarBrand,
-                            CarModel = vs.Vehicle.CarModel,
-                            CreatedOnYear = vs.Vehicle.CreatedOnYear,
-                            Color = vs.Vehicle.Color,
-                            VehicleType = (int)vs.Vehicle.VehicleType
+                            Id = v.VehicleId,
+                            VIN = v.VIN,
+                            CarBrand = v.CarBrand,
+                            CarModel = v.CarModel,
+                            CreatedOnYear = v.CreatedOnYear,
+                            Color = v.Color,
+                            VehicleType = (int)v.VehicleType
                         })
                         .ToList()
                 })
@@ -57,14 +59,6 @@ namespace VMAPP.Services
                 Color = vehicle.Color,
                 VehicleType = (VehicleType)vehicle.VehicleType
             };
-
-            var vehicleServiceVehicle = new VehicleVehicleService
-            {
-                VehicleServiceId = serviceId,
-                Vehicle = dbVehicle
-            };
-
-            dbVehicle.VehicleVehicleServices.Add(vehicleServiceVehicle);
 
             await _dbContext.Vehicles.AddAsync(dbVehicle);
             await _dbContext.SaveChangesAsync();
@@ -102,6 +96,7 @@ namespace VMAPP.Services
                 {
                     Id = r.ServiceRecordId,
                     VehicleId = r.VehicleId,
+                    VehicleServiceId = r.VehicleServiceId,
                     ServiceDate = r.ServiceDate,
                     Cost = r.Cost,
                     Description = r.Description
@@ -143,7 +138,8 @@ namespace VMAPP.Services
                 ServiceDate = record.ServiceDate,
                 Cost = record.Cost,
                 Description = record.Description ?? string.Empty,
-                VehicleId = record.VehicleId
+                VehicleId = record.VehicleId,
+                VehicleServiceId = record.VehicleServiceId
             };
 
             await _dbContext.ServiceRecords.AddAsync(dbRecord);
@@ -163,6 +159,7 @@ namespace VMAPP.Services
             dbRecord.ServiceDate = record.ServiceDate;
             dbRecord.Cost = record.Cost;
             dbRecord.Description = record.Description ?? string.Empty;
+            dbRecord.VehicleServiceId = record.VehicleServiceId;
 
             _dbContext.ServiceRecords.Update(dbRecord);
             await _dbContext.SaveChangesAsync();

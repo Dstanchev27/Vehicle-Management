@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
+using VMAPP.Common;
 using VMAPP.Data.Models.Enums;
 using VMAPP.Web.Models.ServiceRecordModels;
 
@@ -13,7 +14,8 @@ namespace VMAPP.Web.Models.VehicleServiceCars
         public int VehicleId { get; set; }
 
         [Required]
-        [StringLength(100)]
+        [StringLength(17, MinimumLength = 17)]
+        [RegularExpression(GlobalConstant.VINRegex, ErrorMessage = "VIN must be 17 alphanumeric characters")]
         public string VIN { get; set; } = string.Empty;
 
         [Required]

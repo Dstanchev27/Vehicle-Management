@@ -5,6 +5,8 @@ using Microsoft.Extensions.Hosting;
 
 using VMAPP.Data;
 using VMAPP.Data.Models;
+using VMAPP.Data.Seeding;
+using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 
 namespace VMAPP.SandBox
 {
@@ -23,6 +25,12 @@ namespace VMAPP.SandBox
 
             using var scope = host.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            new ApplicationDbContextSeeder()
+                    .SeedAsync(db)
+                    .GetAwaiter()
+                    .GetResult();
+
         }
     }
 }

@@ -14,25 +14,38 @@ namespace VMAPP.Data.Models
     {
         [Key]
         public int Id { get; set; }
+
+        [Required]
         [MaxLength(GlobalConstant.VehicleServiceName)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
-        //what the service is about
+        [Required]
         [MaxLength(GlobalConstant.VehicleServiceDescription)]
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
 
+        [Required]
         public DateTime CreatedOn { get; set; }
-        public string City { get; set; }
 
-        public string Address { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string City { get; set; } = null!;
 
-        public string Email { get; set; }
+        [Required]
+        [MaxLength(200)]
+        public string Address { get; set; } = null!;
 
-        public string Phone { get; set; }
-        // Navigation property
-        public ICollection<ServiceRecord> ServiceRecord { get; set; }
+        [Required]
+        [EmailAddress]
+        [MaxLength(100)]
+        public string Email { get; set; } = null!;
+
+        [Required]
+        [Phone]
+        [MaxLength(20)]
+        public string Phone { get; set; } = null!;
+
+        // Navigation properties
+        public ICollection<ServiceRecord> ServiceRecords { get; set; }
             = new HashSet<ServiceRecord>();
-        public ICollection<VehicleVehicleService> VehicleVehicleServices { get; set; }
-            = new HashSet<VehicleVehicleService>();
     }
 }

@@ -4,6 +4,7 @@ namespace VMAPP.Services.DTOs
     {
         public int Id { get; set; }
         public int VehicleId { get; set; }
+        public int VehicleServiceId { get; set; }
         public DateTime ServiceDate { get; set; }
         public decimal Cost { get; set; }
         public string? Description { get; set; }

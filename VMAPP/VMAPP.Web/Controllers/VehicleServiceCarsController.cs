@@ -131,7 +131,7 @@ namespace VMAPP.Web.Controllers
                     {
                         RecordId = r.Id,
                         VehicleId = r.VehicleId,
-                        ServiceId = serviceId,
+                        ServiceId = r.VehicleServiceId,
                         ServiceName = serviceName,
                         ServiceDate = r.ServiceDate,
                         RecordCost = r.Cost,
@@ -217,6 +217,7 @@ namespace VMAPP.Web.Controllers
             {
                 Id = id,
                 VehicleId = model.VehicleId,
+                VehicleServiceId = model.ServiceId ?? 0,
                 ServiceDate = model.ServiceDate,
                 Cost = model.RecordCost,
                 Description = model.Description
