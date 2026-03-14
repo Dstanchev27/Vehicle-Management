@@ -5,11 +5,11 @@ using VMAPP.Web.Models.VehicleServiceModels;
 
 namespace VMAPP.Web.Controllers
 {
-    public class ManagementController : Controller
+    public class VehicleServicesController : Controller
     {
         private readonly IVSManagementService _vsManagementService;
 
-        public ManagementController(IVSManagementService vsManagementService)
+        public VehicleServicesController(IVSManagementService vsManagementService)
         {
             _vsManagementService = vsManagementService;
         }
@@ -71,6 +71,32 @@ namespace VMAPP.Web.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        [HttpGet]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Details(int id)
+        {
+            var dto = await _vsManagementService.GetVehiclesByServiceIdAsync(id);
+            if (dto == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var model = dto
+                .Select(v => new DetailsViewModel
+                {
+                    Id = v.Id,
+                    VIN = v.VIN,
+                    CarBrand = v.CarBrand,
+                    CarModel = v.CarModel,
+                    CreatedOnYear = v.CreatedOnYear,
+                    Color = v.Color,
+                    VehicleType = v.VehicleType
+                })
+                .ToList();
+
+            return View(model);
         }
 
         [HttpGet]

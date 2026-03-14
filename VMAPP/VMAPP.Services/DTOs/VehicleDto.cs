@@ -1,3 +1,5 @@
+using VMAPP.Data.Models.Enums;
+
 namespace VMAPP.Services.DTOs
 {
     public class VehicleDto
@@ -8,6 +10,6 @@ namespace VMAPP.Services.DTOs
         public string CarModel { get; set; } = string.Empty;
         public int CreatedOnYear { get; set; }
         public string Color { get; set; } = string.Empty;
-        public int VehicleType { get; set; }
+        public VehicleType VehicleType { get; set; }
     }
 }

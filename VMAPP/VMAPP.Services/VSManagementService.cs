@@ -112,5 +112,23 @@ namespace VMAPP.Services
 
             return true;
         }
+
+        public async Task<IReadOnlyList<VehicleDto>> GetVehiclesByServiceIdAsync(int serviceId)
+        {
+            return await _dbContext.ServiceRecords
+                .AsNoTracking()
+                .Where(sr => sr.VehicleServiceId == serviceId)
+                .Select(sr => new VehicleDto
+                {
+                    Id = sr.Vehicle.VehicleId,
+                    VIN = sr.Vehicle.VIN,
+                    CarBrand = sr.Vehicle.CarBrand,
+                    CarModel = sr.Vehicle.CarModel,
+                    CreatedOnYear = sr.Vehicle.CreatedOnYear,
+                    Color = sr.Vehicle.Color,
+                    VehicleType = sr.Vehicle.VehicleType
+                })
+                .ToListAsync();
+        }
     }
 }

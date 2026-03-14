@@ -91,7 +91,7 @@ namespace VMAPP.Web.Controllers
                     CarModel = newVehicle.CarModel,
                     CreatedOnYear = newVehicle.CreatedOnYear,
                     Color = newVehicle.Color,
-                    VehicleType = (int)newVehicle.VehicleType
+                    VehicleType = newVehicle.VehicleType
                 };
 
                 await _vsCarsService.AddVehicleToServiceAsync(newVehicle.ServiceId, vehicleDto);
@@ -160,7 +160,7 @@ namespace VMAPP.Web.Controllers
                 CarModel = model.CarModel,
                 CreatedOnYear = model.CreatedOnYear ?? DateTime.Now.Year,
                 Color = model.Color,
-                VehicleType = (int)model.VehicleType
+                VehicleType = model.VehicleType
             };
 
             var updated = await _vsCarsService.UpdateVehicleAsync(vehicleDto);

@@ -41,7 +41,7 @@ namespace VMAPP.Services
                             CarModel = v.CarModel,
                             CreatedOnYear = v.CreatedOnYear,
                             Color = v.Color,
-                            VehicleType = (int)v.VehicleType
+                            VehicleType = v.VehicleType
                         })
                         .ToList()
                 })
@@ -85,7 +85,7 @@ namespace VMAPP.Services
                 CarModel = vehicleEntity.CarModel,
                 CreatedOnYear = vehicleEntity.CreatedOnYear,
                 Color = vehicleEntity.Color,
-                VehicleType = (int)vehicleEntity.VehicleType
+                VehicleType = vehicleEntity.VehicleType
             };
 
             var records = await _dbContext.ServiceRecords
