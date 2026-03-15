@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using VMAPP.Data.Models.Enums;
 
-namespace VMAPP.Web.Models.VehicleServiceModels
+namespace VMAPP.Web.Models.VehicleViewModels
 {
-    public class DetailsViewModel
+    public class EditVehicleViewModel
     {
         public int Id { get; set; }
 

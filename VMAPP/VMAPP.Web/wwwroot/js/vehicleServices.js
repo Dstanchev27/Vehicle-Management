@@ -19,4 +19,16 @@ $(document).ready(function () {
 
         console.log(`Service with ID ${serviceId} is being deleted.`);
     });
+
+    $('#vehiclesServicesTable').DataTable({
+        responsive: true,
+        searchable: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50],
+        order: [[1, 'asc']],
+        language: {
+            search: "Search vehicles services:",
+            emptyTable: "No vehicles services assigned to this service."
+        }
+    });
 });

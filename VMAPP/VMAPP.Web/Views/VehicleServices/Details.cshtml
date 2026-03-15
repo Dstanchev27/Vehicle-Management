@@ -1,0 +1,89 @@
+@model VMAPP.Web.Models.VehicleServiceModels.VehicleServiceDetailsViewModel
+
+@{
+    ViewData["Title"] = "Service Details — " + Model.Name;
+}
+
+<div class="table-wrapper">
+    <div class="table-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@ViewData["Title"]</h2>
+            <a asp-controller="VehicleServices" asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header table-dark text-white fw-semibold">
+                Service Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input class="form-control" value="@Model.Name" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">City</label>
+                        <input class="form-control" value="@Model.City" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Address</label>
+                        <input class="form-control" value="@Model.Address" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Created On</label>
+                        <input class="form-control" value="@Model.CreatedOn.ToString("dd.MM.yyyy")" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input class="form-control" value="@Model.Email" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone</label>
+                        <input class="form-control" value="@Model.Phone" disabled />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" rows="3" disabled>@Model.Description</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-3">Assigned Vehicles (@Model.Vehicles.Count)</h5>
+
+        <table id="vehiclesTable"
+               class="datatable table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>VIN</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                    <th>Color</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var vehicle in Model.Vehicles)
+                {
+                    <tr>
+                        <td class="fw-semibold">@vehicle.VIN</td>
+                        <td>@vehicle.CarBrand</td>
+                        <td>@vehicle.CarModel</td>
+                        <td>@vehicle.CreatedOnYear</td>
+                        <td>@vehicle.Color</td>
+                        <td>@vehicle.VehicleType</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/vehicleServiceDetails.js" asp-append-version="true"></script>
+}

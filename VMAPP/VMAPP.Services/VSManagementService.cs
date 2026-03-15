@@ -113,6 +113,11 @@ namespace VMAPP.Services
             return true;
         }
 
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _dbContext.VehicleServices.AnyAsync(s => s.Id == id);
+        }
+
         public async Task<IReadOnlyList<VehicleDto>> GetVehiclesByServiceIdAsync(int serviceId)
         {
             return await _dbContext.ServiceRecords
@@ -129,6 +134,37 @@ namespace VMAPP.Services
                     VehicleType = sr.Vehicle.VehicleType
                 })
                 .ToListAsync();
+        }
+
+        public async Task<ServiceWithVehiclesDto?> GetVehiclesServiceDetailsByIdAsync(int id)
+        {
+            return await _dbContext.VehicleServices
+                .AsNoTracking()
+                .Where(vs => vs.Id == id)
+                .Select(vs => new ServiceWithVehiclesDto
+                {
+                    Id = vs.Id,
+                    Name = vs.Name,
+                    City = vs.City,
+                    Address = vs.Address,
+                    Email = vs.Email,
+                    Phone = vs.Phone,
+                    Description = vs.Description,
+                    CreatedOn = vs.CreatedOn,
+                    Vehicles = vs.ServiceRecords
+                        .Select(sr => new VehicleDto
+                        {
+                            Id = sr.Vehicle.VehicleId,
+                            VIN = sr.Vehicle.VIN,
+                            CarBrand = sr.Vehicle.CarBrand,
+                            CarModel = sr.Vehicle.CarModel,
+                            CreatedOnYear = sr.Vehicle.CreatedOnYear,
+                            Color = sr.Vehicle.Color,
+                            VehicleType = sr.Vehicle.VehicleType
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace VMAPP.Web.Controllers
             var dtos = await _vsManagementService.GetAllAsync();
 
             var services = dtos
-                .Select(s => new EditViewModel
+                .Select(s => new VehicleServiceViewModel
                 {
                     Id = s.Id,
                     Name = s.Name,
@@ -74,27 +74,37 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Details(int id)
         {
-            var dto = await _vsManagementService.GetVehiclesByServiceIdAsync(id);
+            var dto = await _vsManagementService.GetVehiclesServiceDetailsByIdAsync(id);
             if (dto == null)
             {
                 return RedirectToAction(nameof(Index));
             }
 
-            var model = dto
-                .Select(v => new DetailsViewModel
-                {
-                    Id = v.Id,
-                    VIN = v.VIN,
-                    CarBrand = v.CarBrand,
-                    CarModel = v.CarModel,
-                    CreatedOnYear = v.CreatedOnYear,
-                    Color = v.Color,
-                    VehicleType = v.VehicleType
-                })
-                .ToList();
+            var model = new VehicleServiceDetailsViewModel
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                City = dto.City,
+                Address = dto.Address,
+                Email = dto.Email,
+                Phone = dto.Phone,
+                Description = dto.Description,
+                CreatedOn = dto.CreatedOn,
+                Vehicles = dto.Vehicles
+                    .Select(v => new VehicleRowViewModel
+                    {
+                        Id = v.Id,
+                        VIN = v.VIN,
+                        CarBrand = v.CarBrand,
+                        CarModel = v.CarModel,
+                        CreatedOnYear = v.CreatedOnYear,
+                        Color = v.Color,
+                        VehicleType = v.VehicleType
+                    })
+                    .ToList()
+            };
 
             return View(model);
         }

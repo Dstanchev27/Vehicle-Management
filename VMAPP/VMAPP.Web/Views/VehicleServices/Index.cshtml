@@ -1,8 +1,13 @@
-﻿@model IEnumerable<EditViewModel>
+﻿@model IEnumerable<VehicleServiceViewModel>
+@{
+    this.ViewData["Title"] = "Vehicle Services";
+}
+
 
 <div class="table-wrapper">
     <div class="table-box">
-
+            
+        <h2 class="text-center mb-4">@this.ViewData["Title"]</h2>
         <div class="d-flex justify-content-start mb-3">
             <a asp-controller="VehicleServices"
                    asp-action="AddService"
@@ -11,9 +16,7 @@
             </a>
         </div>
 
-        <h2 class="text-center mb-4">Creating Vehicle Services</h2>
-
-        <table class="table table-striped table-hover align-middle">
+        <table id="vehiclesServicesTable" class="datatable table table-striped table-hover align-middle">
             <thead class="table-dark">
                 <tr>
                     <th>Name</th>
@@ -22,6 +25,7 @@
                     <th>Created On</th>
                     <th>Email</th>
                     <th>Phone</th>
+                    <th class="text-center action-col"></th>
                     <th class="text-center action-col"></th>
                     <th class="text-center action-col"></th>
                 </tr>
@@ -44,12 +48,12 @@
                         </td>
 
                         <td class="text-center action-col">
-                        <a asp-action="Details"
-                               asp-controller="VehicleServiceCars"
-                               asp-route-id="@service.Id"
-                               class="btn btn-info btn-sm">
-                            <i class="fas fa-info-circle"></i> Details
-                        </a>
+                            <a asp-controller="VehicleServices"
+                                   asp-action="Details"
+                                   asp-route-id="@service.Id"
+                                   class="btn btn-info btn-sm">
+                                <i class="fas fa-info-circle"></i> Details
+                            </a>
                         </td>
 
                         <td class="text-center action-col">
