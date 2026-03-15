@@ -9,11 +9,11 @@ namespace VMAPP.Services
 {
     public class VSCarsService : IVSCarsService
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ApplicationDbContext dbContext;
 
         public VSCarsService(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext;
+            this.dbContext = dbContext;
         }
 
         public async Task<ServiceWithVehiclesDto?> GetServiceWithVehiclesByNameAsync(string serviceName)
@@ -23,7 +23,7 @@ namespace VMAPP.Services
                 return null;
             }
 
-            return await _dbContext.VehicleServices
+            return await dbContext.VehicleServices
                 .AsNoTracking()
                 .Where(s => s.Name == serviceName)
                 .Select(s => new ServiceWithVehiclesDto
@@ -60,15 +60,15 @@ namespace VMAPP.Services
                 VehicleType = (VehicleType)vehicle.VehicleType
             };
 
-            await _dbContext.Vehicles.AddAsync(dbVehicle);
-            await _dbContext.SaveChangesAsync();
+            await dbContext.Vehicles.AddAsync(dbVehicle);
+            await dbContext.SaveChangesAsync();
 
             return dbVehicle.VehicleId;
         }
 
         public async Task<VehicleDetailsDto?> GetVehicleDetailsAsync(int vehicleId)
         {
-            var vehicleEntity = await _dbContext.Vehicles
+            var vehicleEntity = await dbContext.Vehicles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
 
@@ -88,7 +88,7 @@ namespace VMAPP.Services
                 VehicleType = vehicleEntity.VehicleType
             };
 
-            var records = await _dbContext.ServiceRecords
+            var records = await dbContext.ServiceRecords
                 .AsNoTracking()
                 .Where(r => r.VehicleId == vehicleId)
                 .OrderByDescending(r => r.ServiceDate)
@@ -112,7 +112,7 @@ namespace VMAPP.Services
 
         public async Task<bool> UpdateVehicleAsync(VehicleDto vehicle)
         {
-            var dbVehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.VehicleId == vehicle.Id);
+            var dbVehicle = await dbContext.Vehicles.FirstOrDefaultAsync(v => v.VehicleId == vehicle.Id);
 
             if (dbVehicle == null)
             {
@@ -126,15 +126,15 @@ namespace VMAPP.Services
             dbVehicle.Color = vehicle.Color;
             dbVehicle.VehicleType = (VehicleType)vehicle.VehicleType;
 
-            _dbContext.Vehicles.Update(dbVehicle);
-            await _dbContext.SaveChangesAsync();
+            dbContext.Vehicles.Update(dbVehicle);
+            await dbContext.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<VehicleWithServiceRecordsDto?> GetVehicleWithServiceRecordsAsync(int vehicleId, int serviceId)
         {
-            return await _dbContext.Vehicles
+            return await dbContext.Vehicles
                 .AsNoTracking()
                 .Where(v => v.VehicleId == vehicleId)
                 .Select(v => new VehicleWithServiceRecordsDto
@@ -165,7 +165,7 @@ namespace VMAPP.Services
 
         public async Task<ServiceRecordDto?> GetServiceRecordByIdAsync(int id)
         {
-            var sr = await _dbContext.ServiceRecords
+            var sr = await dbContext.ServiceRecords
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.ServiceRecordId == id);
 
@@ -196,14 +196,14 @@ namespace VMAPP.Services
                 VehicleServiceId = dto.VehicleServiceId
             };
 
-            await _dbContext.ServiceRecords.AddAsync(record);
-            await _dbContext.SaveChangesAsync();
+            await dbContext.ServiceRecords.AddAsync(record);
+            await dbContext.SaveChangesAsync();
             return record.ServiceRecordId;
         }
 
         public async Task<bool> UpdateServiceRecordAsync(ServiceRecordDto dto)
         {
-            var record = await _dbContext.ServiceRecords
+            var record = await dbContext.ServiceRecords
                 .FirstOrDefaultAsync(s => s.ServiceRecordId == dto.Id);
 
             if (record == null)
@@ -215,14 +215,14 @@ namespace VMAPP.Services
             record.Description = dto.Description;
             record.ServiceDate = dto.ServiceDate;
 
-            _dbContext.ServiceRecords.Update(record);
-            await _dbContext.SaveChangesAsync();
+            dbContext.ServiceRecords.Update(record);
+            await dbContext.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> DeleteServiceRecordAsync(int id)
         {
-            var record = await _dbContext.ServiceRecords
+            var record = await dbContext.ServiceRecords
                 .FirstOrDefaultAsync(s => s.ServiceRecordId == id);
 
             if (record == null)
@@ -230,21 +230,21 @@ namespace VMAPP.Services
                 return false;
             }
 
-            _dbContext.ServiceRecords.Remove(record);
-            await _dbContext.SaveChangesAsync();
+            dbContext.ServiceRecords.Remove(record);
+            await dbContext.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> DeleteVehicleAsync(int vehicleId)
         {
-            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
+            var vehicle = await dbContext.Vehicles.FirstOrDefaultAsync(v => v.VehicleId == vehicleId);
             if (vehicle == null)
             {
                 return false;
             }
 
-            _dbContext.Vehicles.Remove(vehicle);
-            await _dbContext.SaveChangesAsync();
+            dbContext.Vehicles.Remove(vehicle);
+            await dbContext.SaveChangesAsync();
 
             return true;
         }

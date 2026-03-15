@@ -26,12 +26,12 @@ namespace VMAPP.Data.Models
         [Required]
         public decimal Cost { get; set; }
 
-        // Foreign Keys
         public int VehicleId { get; set; }
+
         public int VehicleServiceId { get; set; }
 
-        // Navigation properties
         public Vehicle Vehicle { get; set; } = null!;
+
         public VehicleService VehicleService { get; set; } = null!;
     }
 }

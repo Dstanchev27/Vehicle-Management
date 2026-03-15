@@ -9,18 +9,18 @@ namespace VMAPP.Web.Controllers
 {
     public class VehicleServicesController : Controller
     {
-        private readonly IVSManagementService _vsManagementService;
-        private readonly IVSCarsService _vsCarsService;
+        private readonly IVSManagementService vsManagementService;
+        private readonly IVSCarsService vsCarsService;
 
         public VehicleServicesController(IVSManagementService vsManagementService, IVSCarsService vsCarsService)
         {
-            _vsManagementService = vsManagementService;
-            _vsCarsService = vsCarsService;
+            this.vsManagementService = vsManagementService;
+            this.vsCarsService = vsCarsService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var dtos = await _vsManagementService.GetAllAsync();
+            var dtos = await vsManagementService.GetAllAsync();
 
             var services = dtos
                 .Select(s => new VehicleServiceViewModel
@@ -66,7 +66,7 @@ namespace VMAPP.Web.Controllers
                     CreatedOn = DateTime.UtcNow
                 };
 
-                await _vsManagementService.CreateAsync(dto);
+                await vsManagementService.CreateAsync(dto);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception)
@@ -78,7 +78,7 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var dto = await _vsManagementService.GetVehiclesServiceDetailsByIdAsync(id);
+            var dto = await vsManagementService.GetVehiclesServiceDetailsByIdAsync(id);
 
             if (dto == null)
             {
@@ -120,7 +120,7 @@ namespace VMAPP.Web.Controllers
                 return Json(new { found = false, message = "Please enter a VIN to search." });
             }
 
-            var vehicle = await _vsManagementService.GetVehicleByVinAsync(vin.Trim().ToUpperInvariant());
+            var vehicle = await vsManagementService.GetVehicleByVinAsync(vin.Trim().ToUpperInvariant());
 
             if (vehicle == null)
             {
@@ -147,7 +147,7 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVehicleToService([FromBody] AddVehicleToServiceRequest request)
         {
-            var success = await _vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId);
+            var success = await vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId);
 
             if (!success)
             {
@@ -161,7 +161,7 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveVehicleFromService([FromBody] AddVehicleToServiceRequest request)
         {
-            var (success, message) = await _vsManagementService.RemoveVehicleFromServiceAsync(
+            var (success, message) = await vsManagementService.RemoveVehicleFromServiceAsync(
                 request.ServiceId, request.VehicleId);
 
             if (!success)
@@ -175,7 +175,7 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> EditService(int id)
         {
-            var dto = await _vsManagementService.GetByIdAsync(id);
+            var dto = await vsManagementService.GetByIdAsync(id);
 
             if (dto == null)
             {
@@ -218,7 +218,7 @@ namespace VMAPP.Web.Controllers
                 CreatedOn = model.CreatedOn
             };
 
-            await _vsManagementService.UpdateAsync(dto);
+            await vsManagementService.UpdateAsync(dto);
             return RedirectToAction(nameof(Index));
         }
 
@@ -226,14 +226,14 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteService(int id)
         {
-            await _vsManagementService.DeleteAsync(id);
+            await vsManagementService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
         public async Task<IActionResult> ServiceVehicle(int vehicleId, int serviceId)
         {
-            var dto = await _vsCarsService.GetVehicleWithServiceRecordsAsync(vehicleId, serviceId);
+            var dto = await vsCarsService.GetVehicleWithServiceRecordsAsync(vehicleId, serviceId);
 
             if (dto == null)
             {
@@ -267,7 +267,7 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetServiceRecord(int id)
         {
-            var dto = await _vsCarsService.GetServiceRecordByIdAsync(id);
+            var dto = await vsCarsService.GetServiceRecordByIdAsync(id);
 
             if (dto == null)
             {
@@ -303,7 +303,7 @@ namespace VMAPP.Web.Controllers
                 VehicleServiceId = model.VehicleServiceId
             };
 
-            await _vsCarsService.AddServiceRecordAsync(dto);
+            await vsCarsService.AddServiceRecordAsync(dto);
             return Json(new { success = true });
         }
 
@@ -326,7 +326,7 @@ namespace VMAPP.Web.Controllers
                 VehicleServiceId = model.VehicleServiceId
             };
 
-            var updated = await _vsCarsService.UpdateServiceRecordAsync(dto);
+            var updated = await vsCarsService.UpdateServiceRecordAsync(dto);
 
             if (!updated)
             {
@@ -340,7 +340,7 @@ namespace VMAPP.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteServiceRecord([FromBody] DeleteServiceRecordRequest request)
         {
-            var deleted = await _vsCarsService.DeleteServiceRecordAsync(request.Id);
+            var deleted = await vsCarsService.DeleteServiceRecordAsync(request.Id);
             if (!deleted)
             {
                 return Json(new { success = false, message = "Record not found." });
@@ -348,6 +348,5 @@ namespace VMAPP.Web.Controllers
 
             return Json(new { success = true });
         }
-
     }
 }

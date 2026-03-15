@@ -17,12 +17,10 @@ namespace VMAPP.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure VIN as unique
             modelBuilder.Entity<Models.Vehicle>()
                 .HasIndex(v => v.VIN)
                 .IsUnique();
 
-            // Configure ServiceRecord relationships
             modelBuilder.Entity<ServiceRecord>(entity =>
             {
                 entity.Property(p => p.Cost)
