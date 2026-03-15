@@ -8,8 +8,12 @@ namespace VMAPP.Services.Interfaces
         Task<VehicleServiceDto?> GetByIdAsync(int id);
         Task<int> CreateAsync(VehicleServiceDto dto);
         Task<bool> UpdateAsync(VehicleServiceDto dto);
-        Task<ServiceWithVehiclesDto?> GetVehiclesServiceDetailsByIdAsync(int id);
-        Task<IReadOnlyList<VehicleDto>> GetVehiclesByServiceIdAsync(int serviceId);
         Task<bool> DeleteAsync(int id);
+        Task<bool> ExistsAsync(int id);
+        Task<IReadOnlyList<VehicleDto>> GetVehiclesByServiceIdAsync(int serviceId);
+        Task<ServiceWithVehiclesDto?> GetVehiclesServiceDetailsByIdAsync(int id);
+        Task<VehicleDto?> GetVehicleByVinAsync(string vin);
+        Task<bool> AddVehicleToServiceAsync(int serviceId, int vehicleId);
+        Task<(bool Success, string? Message)> RemoveVehicleFromServiceAsync(int serviceId, int vehicleId);
     }
 }

@@ -2,16 +2,20 @@
 using VMAPP.Services.DTOs;
 using VMAPP.Services.Interfaces;
 using VMAPP.Web.Models.VehicleServiceModels;
+using VMAPP.Web.Models.VehicleServiceCars;
+using VMAPP.Web.Models.ServiceRecordModels;
 
 namespace VMAPP.Web.Controllers
 {
     public class VehicleServicesController : Controller
     {
         private readonly IVSManagementService _vsManagementService;
+        private readonly IVSCarsService _vsCarsService;
 
-        public VehicleServicesController(IVSManagementService vsManagementService)
+        public VehicleServicesController(IVSManagementService vsManagementService, IVSCarsService vsCarsService)
         {
             _vsManagementService = vsManagementService;
+            _vsCarsService = vsCarsService;
         }
 
         public async Task<IActionResult> Index()
@@ -38,8 +42,7 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public IActionResult AddService()
         {
-            var newService = new AddServiceViewModel();
-            return View(newService);
+            return View(new AddServiceViewModel());
         }
 
         [HttpPost]
@@ -50,7 +53,6 @@ namespace VMAPP.Web.Controllers
             {
                 return View(newService);
             }
-
             try
             {
                 var dto = new VehicleServiceDto
@@ -77,6 +79,7 @@ namespace VMAPP.Web.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var dto = await _vsManagementService.GetVehiclesServiceDetailsByIdAsync(id);
+
             if (dto == null)
             {
                 return RedirectToAction(nameof(Index));
@@ -110,9 +113,70 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> SearchVehicleByVin(string vin)
+        {
+            if (string.IsNullOrWhiteSpace(vin))
+            {
+                return Json(new { found = false, message = "Please enter a VIN to search." });
+            }
+
+            var vehicle = await _vsManagementService.GetVehicleByVinAsync(vin.Trim().ToUpperInvariant());
+
+            if (vehicle == null)
+            {
+                return Json(new { found = false, message = $"No vehicle found with VIN \"{vin.Trim().ToUpperInvariant()}\"." });
+            }
+
+            return Json(new
+            {
+                found = true,
+                vehicle = new
+                {
+                    id = vehicle.Id,
+                    vin = vehicle.VIN,
+                    carBrand = vehicle.CarBrand,
+                    carModel = vehicle.CarModel,
+                    createdOnYear = vehicle.CreatedOnYear,
+                    color = vehicle.Color,
+                    vehicleType = vehicle.VehicleType.ToString()
+                }
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddVehicleToService([FromBody] AddVehicleToServiceRequest request)
+        {
+            var success = await _vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId);
+
+            if (!success)
+            {
+                return Json(new { success = false, message = "This vehicle is already assigned to the service." });
+            }
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveVehicleFromService([FromBody] AddVehicleToServiceRequest request)
+        {
+            var (success, message) = await _vsManagementService.RemoveVehicleFromServiceAsync(
+                request.ServiceId, request.VehicleId);
+
+            if (!success)
+            {
+                return Json(new { success = false, message });
+            }
+
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> EditService(int id)
         {
             var dto = await _vsManagementService.GetByIdAsync(id);
+
             if (dto == null)
             {
                 return RedirectToAction(nameof(Index));
@@ -154,12 +218,7 @@ namespace VMAPP.Web.Controllers
                 CreatedOn = model.CreatedOn
             };
 
-            var updated = await _vsManagementService.UpdateAsync(dto);
-            if (!updated)
-            {
-                return RedirectToAction(nameof(Index));
-            }
-
+            await _vsManagementService.UpdateAsync(dto);
             return RedirectToAction(nameof(Index));
         }
 
@@ -170,5 +229,125 @@ namespace VMAPP.Web.Controllers
             await _vsManagementService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ServiceVehicle(int vehicleId, int serviceId)
+        {
+            var dto = await _vsCarsService.GetVehicleWithServiceRecordsAsync(vehicleId, serviceId);
+
+            if (dto == null)
+            {
+                return RedirectToAction(nameof(Details), new { id = serviceId });
+            }
+
+            var model = new ServiceVehicleViewModel
+            {
+                VehicleId = dto.Id,
+                ServiceId = serviceId,
+                VIN = dto.VIN,
+                CarBrand = dto.CarBrand,
+                CarModel = dto.CarModel,
+                CreatedOnYear = dto.CreatedOnYear,
+                Color = dto.Color,
+                VehicleType = dto.VehicleType,
+                ServiceRecords = dto.ServiceRecords
+                    .Select(sr => new ServiceRecordRowViewModel
+                    {
+                        Id = sr.Id,
+                        Cost = sr.Cost,
+                        Description = sr.Description,
+                        ServiceDate = sr.ServiceDate
+                    })
+                    .ToList()
+            };
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetServiceRecord(int id)
+        {
+            var dto = await _vsCarsService.GetServiceRecordByIdAsync(id);
+
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return Json(new
+            {
+                id = dto.Id,
+                cost = dto.Cost,
+                description = dto.Description,
+                serviceDate = dto.ServiceDate.ToString("yyyy-MM-dd"),
+                vehicleId = dto.VehicleId,
+                vehicleServiceId = dto.VehicleServiceId
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddServiceRecord([FromBody] ServiceRecordFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Invalid data." });
+            }
+
+            var dto = new ServiceRecordDto
+            {
+                Cost = model.Cost,
+                Description = model.Description,
+                ServiceDate = model.ServiceDate,
+                VehicleId = model.VehicleId,
+                VehicleServiceId = model.VehicleServiceId
+            };
+
+            await _vsCarsService.AddServiceRecordAsync(dto);
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditServiceRecord([FromBody] ServiceRecordFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Invalid data." });
+            }
+
+            var dto = new ServiceRecordDto
+            {
+                Id = model.Id,
+                Cost = model.Cost,
+                Description = model.Description,
+                ServiceDate = model.ServiceDate,
+                VehicleId = model.VehicleId,
+                VehicleServiceId = model.VehicleServiceId
+            };
+
+            var updated = await _vsCarsService.UpdateServiceRecordAsync(dto);
+
+            if (!updated)
+            {
+                return Json(new { success = false, message = "Record not found." });
+            }
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteServiceRecord([FromBody] DeleteServiceRecordRequest request)
+        {
+            var deleted = await _vsCarsService.DeleteServiceRecordAsync(request.Id);
+            if (!deleted)
+            {
+                return Json(new { success = false, message = "Record not found." });
+            }
+
+            return Json(new { success = true });
+        }
+
     }
 }

@@ -11,7 +11,6 @@
   <Folder Name="/VMAPP.Services/">
     <Project Path="VMAPP.Services/VMAPP.Services.csproj" Id="2a26093b-fb1b-4d13-af2f-8fd3baace25e" />
   </Folder>
-  <Folder Name="/VMAPP.Tests/" />
   <Folder Name="/VMAPP.Web/">
     <Project Path="VMAPP.Web/VMAPP.Web.csproj" />
   </Folder>

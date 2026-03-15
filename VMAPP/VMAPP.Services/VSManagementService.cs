@@ -81,6 +81,7 @@ namespace VMAPP.Services
         public async Task<bool> UpdateAsync(VehicleServiceDto dto)
         {
             var entity = await _dbContext.VehicleServices.FirstOrDefaultAsync(s => s.Id == dto.Id);
+
             if (entity == null)
             {
                 return false;
@@ -102,6 +103,7 @@ namespace VMAPP.Services
         public async Task<bool> DeleteAsync(int id)
         {
             var entity = await _dbContext.VehicleServices.FirstOrDefaultAsync(s => s.Id == id);
+
             if (entity == null)
             {
                 return false;
@@ -138,7 +140,7 @@ namespace VMAPP.Services
 
         public async Task<ServiceWithVehiclesDto?> GetVehiclesServiceDetailsByIdAsync(int id)
         {
-            return await _dbContext.VehicleServices
+            var service = await _dbContext.VehicleServices
                 .AsNoTracking()
                 .Where(vs => vs.Id == id)
                 .Select(vs => new ServiceWithVehiclesDto
@@ -150,21 +152,108 @@ namespace VMAPP.Services
                     Email = vs.Email,
                     Phone = vs.Phone,
                     Description = vs.Description,
-                    CreatedOn = vs.CreatedOn,
-                    Vehicles = vs.ServiceRecords
-                        .Select(sr => new VehicleDto
-                        {
-                            Id = sr.Vehicle.VehicleId,
-                            VIN = sr.Vehicle.VIN,
-                            CarBrand = sr.Vehicle.CarBrand,
-                            CarModel = sr.Vehicle.CarModel,
-                            CreatedOnYear = sr.Vehicle.CreatedOnYear,
-                            Color = sr.Vehicle.Color,
-                            VehicleType = sr.Vehicle.VehicleType
-                        })
-                        .ToList()
+                    CreatedOn = vs.CreatedOn
                 })
                 .FirstOrDefaultAsync();
+
+            if (service == null)
+            {
+                return null;
+            }
+
+            var vehicleIds = await _dbContext.ServiceRecords
+                .AsNoTracking()
+                .Where(sr => sr.VehicleServiceId == id)
+                .Select(sr => sr.VehicleId)
+                .Distinct()
+                .ToListAsync();
+
+            service.Vehicles = await _dbContext.Vehicles
+                .AsNoTracking()
+                .Where(v => vehicleIds.Contains(v.VehicleId))
+                .Select(v => new VehicleDto
+                {
+                    Id = v.VehicleId,
+                    VIN = v.VIN,
+                    CarBrand = v.CarBrand,
+                    CarModel = v.CarModel,
+                    CreatedOnYear = v.CreatedOnYear,
+                    Color = v.Color,
+                    VehicleType = v.VehicleType
+                })
+                .ToListAsync();
+
+            return service;
+        }
+
+        public async Task<VehicleDto?> GetVehicleByVinAsync(string vin)
+        {
+            var vehicle = await _dbContext.Vehicles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.VIN == vin);
+
+            if (vehicle == null)
+            {
+                return null;
+            }
+
+            return new VehicleDto
+            {
+                Id = vehicle.VehicleId,
+                VIN = vehicle.VIN,
+                CarBrand = vehicle.CarBrand,
+                CarModel = vehicle.CarModel,
+                CreatedOnYear = vehicle.CreatedOnYear,
+                Color = vehicle.Color,
+                VehicleType = vehicle.VehicleType
+            };
+        }
+
+        public async Task<bool> AddVehicleToServiceAsync(int serviceId, int vehicleId)
+        {
+            var alreadyAssigned = await _dbContext.ServiceRecords
+                .AnyAsync(sr => sr.VehicleServiceId == serviceId && sr.VehicleId == vehicleId);
+
+            if (alreadyAssigned)
+            {
+                return false;
+            }
+
+            var record = new ServiceRecord
+            {
+                VehicleServiceId = serviceId,
+                VehicleId = vehicleId,
+                Cost = 0,
+                Description = $"Vehicle accepted into service on {DateTime.UtcNow:dd MMMM yyyy}.",
+                ServiceDate = DateTime.UtcNow
+            };
+
+            await _dbContext.ServiceRecords.AddAsync(record);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(bool Success, string? Message)> RemoveVehicleFromServiceAsync(int serviceId, int vehicleId)
+        {
+            var records = await _dbContext.ServiceRecords
+                .Where(sr => sr.VehicleServiceId == serviceId && sr.VehicleId == vehicleId)
+                .ToListAsync();
+
+            if (!records.Any())
+            {
+                return (false, "Vehicle is not assigned to this service.");
+            }
+
+            if (records.Any(r => r.Cost > 0))
+            {
+                return (false, "This vehicle cannot be removed because it has service records with costs. Remove all paid service records first.");
+            }
+
+            _dbContext.ServiceRecords.RemoveRange(records);
+            await _dbContext.SaveChangesAsync();
+
+            return (true, null);
         }
     }
 }
