@@ -267,7 +267,7 @@ handling (for costs like `10.05`).
 
 | View | Route | Model | Description |
 |---|---|---|---|
-| `Index.cshtml` | `GET /VehicleServices /Index` | `IEnumerable<VehicleServiceViewModel>` | Lists all service stations in a jQuery DataTables table (Name, City, Address, Created On, Email as `mailto:` link, Phone as `tel:` link). Provides a **Create New Service** button. Each row has **Details**, **Edit**, and **Delete** buttons. Delete opens a Bootstrap confirmation modal before submitting. |
+| `Index.cshtml` | `GET /VehicleServices /Index` | `IEnumerable <VehicleServiceViewModel>` | Lists all service stations in a jQuery DataTables table (Name, City, Address, Created On, Email as `mailto:` link, Phone as `tel:` link). Provides a **Create New Service** button. Each row has **Details**, **Edit**, and **Delete** buttons. Delete opens a Bootstrap confirmation modal before submitting. |
 | `AddService.cshtml` | `GET/POST /VehicleServices /AddService` | `AddServiceViewModel` | Form to create a new service station. Two-column layout with fields: Name, City, Address, Phone, Email, Description (textarea). Includes server-side and client-side validation. |
 | `EditService.cshtml` | `GET/POST /VehicleServices /EditService /{id}` | `EditViewModel` | Form to update an existing service station. Same fields as AddService, pre-populated from the database. Hidden `Id` field ensures the correct record is updated. Cancel returns to the Index. |
 | `DeleteService.cshtml` | `GET/POST /VehicleServices /DeleteService /{id}` | `DeleteViewModel` | Delete confirmation form. Displays all service station fields as read-only (disabled inputs). A JavaScript `confirm()` prompt provides a second confirmation before the POST is submitted. Cancel returns to the Index. |
@@ -278,7 +278,7 @@ handling (for costs like `10.05`).
 
 | View | Route | Model | Description |
 |---|---|---|---|
-| `Index.cshtml` | `GET /Vehicle /Index` | `IEnumerable<VehicleIndexViewModel>` | Lists all vehicles in a jQuery DataTables table (VIN, Brand, Model, Year, Added On). Provides an **Add New Vehicle** button. Each row has **Edit** and **Delete** buttons. Delete opens a Bootstrap confirmation modal that displays the vehicle's brand, model, and VIN. JS logic lives in `vehicles.js`. |
+| `Index.cshtml` | `GET /Vehicle /Index` | `IEnumerable <VehicleIndexViewModel>` | Lists all vehicles in a jQuery DataTables table (VIN, Brand, Model, Year, Added On). Provides an **Add New Vehicle** button. Each row has **Edit** and **Delete** buttons. Delete opens a Bootstrap confirmation modal that displays the vehicle's brand, model, and VIN. JS logic lives in `vehicles.js`. |
 | `AddVehicle.cshtml` | `GET/POST /Vehicle /AddVehicle` | `AddVehicleViewModel` | Form to create a new vehicle. Fields: VIN (17 characters, forced uppercase), Brand, Model, Year (1886-2100), Color, and Vehicle Type (dropdown populated from the `VehicleType` enum). All fields are required with server-side and client-side validation. |
 | `EditVehicle.cshtml` | `GET/POST /Vehicle /EditVehicle /{id}` | `EditVehicleViewModel` | Form to update an existing vehicle. Identical fields to AddVehicle, pre-populated from the database. Hidden `Id` field identifies the record. Includes a Back to List link and Cancel button. |
 
