@@ -41,8 +41,8 @@ namespace VMAPP.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<Models.Vehicle> Vehicles { get; set; } = null!;
-        public DbSet<Models.ServiceRecord> ServiceRecords { get; set; } = null!;
-        public DbSet<Models.VehicleService> VehicleServices { get; set; } = null!;
+        public DbSet<Vehicle> Vehicles { get; set; } = null!;
+        public DbSet<ServiceRecord> ServiceRecords { get; set; } = null!;
+        public DbSet<VehicleService> VehicleServices { get; set; } = null!;
     }
 }

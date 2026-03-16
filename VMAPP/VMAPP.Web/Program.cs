@@ -22,6 +22,7 @@ namespace VMAPP.Web
 
             builder.Services.AddScoped<IVSManagementService, VSManagementService>();
             builder.Services.AddScoped<IVSCarsService, VSCarsService>();
+            builder.Services.AddScoped<IVSService, VSService>();
 
             var supportedCultures = new[] { new CultureInfo("en-US") };
             builder.Services.Configure<RequestLocalizationOptions>(options =>

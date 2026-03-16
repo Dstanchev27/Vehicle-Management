@@ -1,0 +1,104 @@
+@model VMAPP.Web.Models.VehicleViewModels.EditVehicleViewModel
+
+@{
+    ViewData["Title"] = "Edit Vehicle";
+}
+
+<div class="table-wrapper">
+    <div class="table-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@ViewData["Title"]</h2>
+            <a asp-controller="Vehicle" asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <form asp-action="EditVehicle" asp-controller="Vehicle" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="card">
+                <div class="card-header table-dark text-white fw-semibold">
+                    Vehicle Information
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <label asp-for="VIN" class="form-label fw-semibold">
+                                VIN <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="VIN"
+                                   class="form-control text-uppercase"
+                                   maxlength="17" />
+                            <span asp-validation-for="VIN" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CarBrand" class="form-label fw-semibold">
+                                Brand <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CarBrand" class="form-control" />
+                            <span asp-validation-for="CarBrand" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CarModel" class="form-label fw-semibold">
+                                Model <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CarModel" class="form-control" />
+                            <span asp-validation-for="CarModel" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CreatedOnYear" class="form-label fw-semibold">
+                                Year <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="CreatedOnYear"
+                                   class="form-control"
+                                   type="number"
+                                   min="1886"
+                                   max="2100" />
+                            <span asp-validation-for="CreatedOnYear" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Color" class="form-label fw-semibold">
+                                Color <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Color" class="form-control" />
+                            <span asp-validation-for="Color" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="VehicleType" class="form-label fw-semibold">
+                                Vehicle Type <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="VehicleType"
+                                    class="form-select"
+                                    asp-items="Html.GetEnumSelectList<VMAPP.Data.Models.Enums.VehicleType>()">
+                            </select>
+                            <span asp-validation-for="VehicleType" class="text-danger small"></span>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end gap-2">
+                    <a asp-controller="Vehicle" asp-action="Index" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

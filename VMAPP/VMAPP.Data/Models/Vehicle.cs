@@ -4,12 +4,6 @@ using VMAPP.Data.Models.Enums;
 
 namespace VMAPP.Data.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
     public class Vehicle
     {
         [Key]
@@ -22,7 +16,7 @@ namespace VMAPP.Data.Models
 
         [Required]
         [MaxLength(GlobalConstant.CarBrandLength)]
-        public  string CarBrand { get; set; } = null!;
+        public string CarBrand { get; set; } = null!;
 
         [Required]
         [MaxLength(GlobalConstant.CarModelLength)]
@@ -37,9 +31,11 @@ namespace VMAPP.Data.Models
         public string Color { get; set; } = null!;
 
         [Required]
-        public  VehicleType VehicleType { get; set; }
+        public VehicleType VehicleType { get; set; }
 
-        // Navigation properties
+        [Required]
+        public DateTime CreatedOn { get; set; }
+
         public ICollection<ServiceRecord> ServiceRecords { get; set; } = new HashSet<ServiceRecord>();
     }
 }

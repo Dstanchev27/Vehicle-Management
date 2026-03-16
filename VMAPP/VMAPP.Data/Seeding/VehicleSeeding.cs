@@ -1,13 +1,13 @@
-﻿namespace VMAPP.Data.Seeding
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using VMAPP.Data.Models;
-    using VMAPP.Data.Models.Enums;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using VMAPP.Data.Models;
+using VMAPP.Data.Models.Enums;
 
+namespace VMAPP.Data.Seeding
+{
     public class VehicleSeeding : ISeeder
     {
         public async Task SeedAsync(ApplicationDbContext dbContext)
@@ -26,7 +26,8 @@
                     CarModel = "Camry",
                     CreatedOnYear = 2020,
                     Color = "Silver",
-                    VehicleType = VehicleType.Sedan
+                    VehicleType = VehicleType.Sedan,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -35,7 +36,8 @@
                     CarModel = "CR-V",
                     CreatedOnYear = 2021,
                     Color = "Blue",
-                    VehicleType = VehicleType.SUV
+                    VehicleType = VehicleType.SUV,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -44,7 +46,8 @@
                     CarModel = "F-150",
                     CreatedOnYear = 2019,
                     Color = "Black",
-                    VehicleType = VehicleType.Truck
+                    VehicleType = VehicleType.Truck,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -53,7 +56,8 @@
                     CarModel = "Model S",
                     CreatedOnYear = 2022,
                     Color = "White",
-                    VehicleType = VehicleType.Electric
+                    VehicleType = VehicleType.Electric,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -62,7 +66,8 @@
                     CarModel = "3 Series",
                     CreatedOnYear = 2020,
                     Color = "Gray",
-                    VehicleType = VehicleType.Sedan
+                    VehicleType = VehicleType.Sedan,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -71,7 +76,8 @@
                     CarModel = "Grand Cherokee",
                     CreatedOnYear = 2021,
                     Color = "Red",
-                    VehicleType = VehicleType.SUV
+                    VehicleType = VehicleType.SUV,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -80,7 +86,8 @@
                     CarModel = "Civic",
                     CreatedOnYear = 2023,
                     Color = "Green",
-                    VehicleType = VehicleType.Sedan
+                    VehicleType = VehicleType.Sedan,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -89,7 +96,8 @@
                     CarModel = "Odyssey",
                     CreatedOnYear = 2022,
                     Color = "Silver",
-                    VehicleType = VehicleType.Van
+                    VehicleType = VehicleType.Van,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -98,7 +106,8 @@
                     CarModel = "Soul",
                     CreatedOnYear = 2019,
                     Color = "Orange",
-                    VehicleType = VehicleType.Hatchback
+                    VehicleType = VehicleType.Hatchback,
+                    CreatedOn = DateTime.UtcNow
                 },
                 new Vehicle
                 {
@@ -107,7 +116,8 @@
                     CarModel = "Mazda3",
                     CreatedOnYear = 2020,
                     Color = "Blue",
-                    VehicleType = VehicleType.Sedan
+                    VehicleType = VehicleType.Sedan,
+                    CreatedOn = DateTime.UtcNow
                 }
             };
 

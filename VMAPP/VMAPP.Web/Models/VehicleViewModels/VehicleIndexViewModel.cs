@@ -1,8 +1,8 @@
 using VMAPP.Data.Models.Enums;
 
-namespace VMAPP.Services.DTOs
+namespace VMAPP.Web.Models.VehicleViewModels
 {
-    public class VehicleDto
+    public class VehicleIndexViewModel
     {
         public int Id { get; set; }
         public string VIN { get; set; } = string.Empty;
