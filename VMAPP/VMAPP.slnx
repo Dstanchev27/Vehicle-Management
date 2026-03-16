@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/SolutionFiles/">
+    <File Path="../README.md" />
+  </Folder>
   <Folder Name="/VMAPP.Common/">
     <Project Path="VMAPP.Common/VMAPP.Common.csproj" Id="f8052c1a-4b2a-499b-a922-67991f95eb24" />
   </Folder>
