@@ -17,7 +17,6 @@
             </a>
         </div>
 
-        @* ── Vehicle info ── *@
         <div class="card mb-4">
             <div class="card-header table-dark text-white fw-semibold">
                 Vehicle Information
@@ -52,7 +51,6 @@
             </div>
         </div>
 
-        @* ── Service records ── *@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0">Service Records (@Model.ServiceRecords.Count)</h5>
             <button type="button" class="btn btn-primary btn-sm"
@@ -68,9 +66,9 @@
                     <th>Description</th>
                     <th>Service Date</th>
                     <th>Cost</th>
-                    <th class="text-center action-col"></th>
-                    <th class="text-center action-col"></th>
-                    <th class="text-center action-col"></th>
+                    <th class="text-center action-col">Details</th>
+                    <th class="text-center action-col">Edit</th>
+                    <th class="text-center action-col">Delete</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,12 +108,10 @@
     </div>
 </div>
 
-@* ── Anti-forgery + hidden state ── *@
 @Html.AntiForgeryToken()
 <input type="hidden" id="hiddenVehicleId" value="@Model.VehicleId" />
 <input type="hidden" id="hiddenServiceId" value="@Model.ServiceId" />
 
-@* ── Add Record Modal ── *@
 <div class="modal fade" id="addRecordModal" tabindex="-1"
      aria-labelledby="addRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -163,7 +159,6 @@
     </div>
 </div>
 
-@* ── Details Record Modal ── *@
 <div class="modal fade" id="detailsRecordModal" tabindex="-1"
      aria-labelledby="detailsRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -195,7 +190,6 @@
     </div>
 </div>
 
-@* ── Edit Record Modal ── *@
 <div class="modal fade" id="editRecordModal" tabindex="-1"
      aria-labelledby="editRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -243,7 +237,6 @@
     </div>
 </div>
 
-@* ── Delete Confirmation Modal ── *@
 <div class="modal fade" id="deleteRecordModal" tabindex="-1"
      aria-labelledby="deleteRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">

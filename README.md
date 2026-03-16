@@ -31,7 +31,7 @@ The application helps manage vehicles, their service history, and related servic
 - Global background image
 - Content displayed in centered white cards for readability
 - Bootstrap-based layout
-- jQuery DataTables integration for tabular data
+- jQuery DataTables integration for tabular data with pagination, serching, and sorting
 
 ### Privacy & Terms
 
