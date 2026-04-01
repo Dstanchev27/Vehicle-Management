@@ -3,6 +3,8 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using VMAPP.Services;
 using VMAPP.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using VMAPP.Data;
 
 namespace VMAPP.Web
 {
@@ -19,6 +21,8 @@ namespace VMAPP.Web
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<IVSManagementService, VSManagementService>();
             builder.Services.AddScoped<IVSCarsService, VSCarsService>();
@@ -47,11 +51,13 @@ namespace VMAPP.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapRazorPages();
 
             app.Run();
         }
