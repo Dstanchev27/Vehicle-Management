@@ -10,6 +10,6 @@
     {
         InsuranceCompany = 0,
         VehicleService = 1,
-        ProgramAdministrator = 3
+        ProgramAdministrator = 2
     }
 }

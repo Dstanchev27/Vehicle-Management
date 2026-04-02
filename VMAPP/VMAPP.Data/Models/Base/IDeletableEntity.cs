@@ -6,7 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal interface IDeletableEntity
+    public interface IDeletableEntity
     {
         bool IsDeleted { get; set; }
 

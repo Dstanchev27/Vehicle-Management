@@ -46,7 +46,7 @@ namespace VMAPP.Data.Models
         public virtual ICollection<IdentityUserLogin<string>> Logins { get; set; }
 
         public ICollection<InsurancePolicy> CreatedInsurancePolicies { get; set; } = new List<InsurancePolicy>();
+        public ICollection<InsuranceCompany> CreatedInsuranceCompanies { get; set; } = new List<InsuranceCompany>();
         public ICollection<ServiceRecord> CreatedServiceRecords { get; set; } = new List<ServiceRecord>();
-        public ICollection<InspectionRecord> CreatedInspectionRecords { get; set; } = new List<InspectionRecord>();
     }
 }

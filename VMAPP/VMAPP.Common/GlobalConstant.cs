@@ -23,5 +23,10 @@
 
         public const int AddressMaxLength = 1024;
         public const int AddressMinLength = 3;
+
+        public const int InsuranceCompanyName = 150;
+        public const int InsuranceCompanyDescription = 1000;
+        public const int InsurancePolicyNumber = 50;
+        public const int InsuranceClaimDescription = 1500;
     }
 }

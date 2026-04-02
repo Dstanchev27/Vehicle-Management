@@ -1,27 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace VMAPP.Data.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
     using VMAPP.Common;
     using VMAPP.Data.Models.Base;
 
-    public class VehicleService : IAuditInfo, IDeletableEntity
+    public class InsuranceCompany : IAuditInfo, IDeletableEntity
     {
         [Key]
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(GlobalConstant.VehicleServiceName)]
+        [MaxLength(GlobalConstant.InsuranceCompanyName)]
         public string Name { get; set; } = null!;
 
         [Required]
-        [MaxLength(GlobalConstant.VehicleServiceDescription)]
+        [MaxLength(GlobalConstant.InsuranceCompanyDescription)]
         public string Description { get; set; } = null!;
 
         [Required]
@@ -48,8 +42,13 @@ namespace VMAPP.Data.Models
         [MaxLength(20)]
         public string Phone { get; set; } = null!;
 
-        // Navigation properties
-        public ICollection<ServiceRecord> ServiceRecords { get; set; }
-            = new HashSet<ServiceRecord>();
+        public string CreatedById { get; set; } = null!;
+        public ApplicationUser CreatedBy { get; set; } = null!;
+
+        public string? ModifiedById { get; set; }
+        public ApplicationUser? ModifiedBy { get; set; }
+
+        public ICollection<InsurancePolicy> InsurancePolicies { get; set; }
+            = new HashSet<InsurancePolicy>();
     }
 }

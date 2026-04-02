@@ -6,7 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
 
-    internal interface IAuditInfo
+    public interface IAuditInfo
     {
         DateTime CreatedOn { get; set; }
         DateTime? ModifiedOn { get; set; }

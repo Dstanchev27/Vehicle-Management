@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using VMAPP.Common;
+using VMAPP.Data.Models.Base;
 using VMAPP.Data.Models.Enums;
 
 namespace VMAPP.Data.Models
 {
-    public class Vehicle
+    public class Vehicle : IAuditInfo, IDeletableEntity
     {
         [Key]
         public int VehicleId { get; set; }
@@ -35,6 +36,9 @@ namespace VMAPP.Data.Models
 
         [Required]
         public DateTime CreatedOn { get; set; }
+        public DateTime? ModifiedOn { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedOn { get; set; }
 
         public ICollection<ServiceRecord> ServiceRecords { get; set; } = new HashSet<ServiceRecord>();
     }
