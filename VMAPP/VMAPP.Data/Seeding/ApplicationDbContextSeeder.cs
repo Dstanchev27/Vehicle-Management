@@ -19,7 +19,10 @@ namespace VMAPP.Data.Seeding
             {
                 new VehicleSeeding(),
                 new VehicleServiceSeeding(),
-                new ServiceRecordSeeding()
+                new ServiceRecordSeeding(),
+                new InsuranceCompanySeeding(),
+                new InsurancePolicySeeding(),
+                new InsuranceClaimSeeding()
             };
 
             foreach (var seeder in seeders)

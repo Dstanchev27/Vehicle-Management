@@ -3,16 +3,15 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using VMAPP.Services;
 using VMAPP.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using VMAPP.Data;
+using VMAPP.Data.Models;
+using VMAPP.Data.Seeding;
 
 namespace VMAPP.Web
 {
-    using VMAPP.Data;
-
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddControllersWithViews();
@@ -22,7 +21,8 @@ namespace VMAPP.Web
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<IVSManagementService, VSManagementService>();
             builder.Services.AddScoped<IVSCarsService, VSCarsService>();
@@ -37,6 +37,13 @@ namespace VMAPP.Web
             });
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await dbContext.Database.MigrateAsync();
+                await new ApplicationDbContextSeeder().SeedAsync(dbContext);
+            }
 
             app.UseRequestLocalization();
 
@@ -59,7 +66,7 @@ namespace VMAPP.Web
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }
