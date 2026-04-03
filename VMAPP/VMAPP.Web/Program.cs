@@ -1,11 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using System.Globalization;
-using Microsoft.AspNetCore.Localization;
-using VMAPP.Services;
-using VMAPP.Services.Interfaces;
-using VMAPP.Data;
-using VMAPP.Data.Models;
-using VMAPP.Data.Seeding;
+using VMAPP.Web.Extensions;
+using VMAPP.Web.Extensions.Middleware;
 
 namespace VMAPP.Web
 {
@@ -13,60 +7,45 @@ namespace VMAPP.Web
     {
         public static async Task Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddControllersWithViews();
-
-            string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
-
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            builder.Services.AddScoped<IVSManagementService, VSManagementService>();
-            builder.Services.AddScoped<IVSCarsService, VSCarsService>();
-            builder.Services.AddScoped<IVSService, VSService>();
-
-            var supportedCultures = new[] { new CultureInfo("en-US") };
-            builder.Services.Configure<RequestLocalizationOptions>(options =>
+            try
             {
-                options.DefaultRequestCulture = new RequestCulture("en-US");
-                options.SupportedCultures = supportedCultures;
-                options.SupportedUICultures = supportedCultures;
-            });
+                var builder = WebApplication.CreateBuilder(args);
 
-            var app = builder.Build();
+                var services = builder.Services;
 
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await dbContext.Database.MigrateAsync();
-                await new ApplicationDbContextSeeder().SeedAsync(dbContext);
+                services
+                    .AddDatabase(builder.Configuration)
+                    .AddIdentity()
+                    .AddControllersAndViews()
+                    .AddCookieConsent()
+                    .AddControllersAndViews()
+                    .AddApplicationServices()
+                    .AddSecurity()
+                    .AddRazorPages();
+
+                var app = builder.Build();
+
+                app
+                    .UseRequestLocalization()
+                    .AddErrorHandler()
+                    //.InsertUserInLog()
+                    .UseHsts()
+                    .UseHttpsRedirection()
+                    .UseCookiePolicy()
+                    .UseStaticFiles()
+                    .UseRouting()
+                    .UseAuthentication()
+                    .UseAuthorization()
+                    .UseMiddleware<EnforceAdmin2FAMiddleware>()
+                    .InsertEndpoints();
+
+                await app.RunAsync();
             }
-
-            app.UseRequestLocalization();
-
-            if (!app.Environment.IsDevelopment())
+            catch (Exception ex)
             {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
+                await Console.Error.WriteLineAsync($"Application failed to start: {ex}");
+                throw;
             }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-            app.MapRazorPages();
-
-            await app.RunAsync();
         }
     }
 }

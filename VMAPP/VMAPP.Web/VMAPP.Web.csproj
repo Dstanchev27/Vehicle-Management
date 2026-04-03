@@ -36,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\InsuranceModels\" />
     <Folder Include="Pages\" />
   </ItemGroup>
 
