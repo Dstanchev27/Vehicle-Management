@@ -17,12 +17,14 @@ namespace VMAPP.Data.Seeding
 
             var seeders = new List<ISeeder>
             {
+                new RoleSeeding(),
+                new UserSeeding(),
                 new VehicleSeeding(),
                 new VehicleServiceSeeding(),
-                new ServiceRecordSeeding(),
                 new InsuranceCompanySeeding(),
+                new ServiceRecordSeeding(),
                 new InsurancePolicySeeding(),
-                new InsuranceClaimSeeding()
+                new InsuranceClaimSeeding(),
             };
 
             foreach (var seeder in seeders)

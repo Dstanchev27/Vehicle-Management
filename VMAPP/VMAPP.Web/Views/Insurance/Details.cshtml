@@ -1,0 +1,65 @@
+@model InsuranceCompanyDetailsViewModel
+@{
+    ViewData["Title"] = "Insurance Company Details — " + Model.Name;
+}
+
+<div class="table-wrapper">
+    <div class="table-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@ViewData["Title"]</h2>
+            <a asp-controller="Insurance" asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header fw-semibold text-dark">
+                Company Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input class="form-control" value="@Model.Name" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">City</label>
+                        <input class="form-control" value="@Model.City" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Address</label>
+                        <input class="form-control" value="@Model.Address" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Created On</label>
+                        <input class="form-control" value="@Model.CreatedOn.ToString("dd.MM.yyyy")" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input class="form-control" value="@Model.Email" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone</label>
+                        <input class="form-control" value="@Model.Phone" disabled />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" rows="3" disabled>@Model.Description</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-controller="Insurance"
+               asp-action="EditInsuranceCompany"
+               asp-route-id="@Model.Id"
+               class="btn btn-outline-primary btn-sm">
+                Edit
+            </a>
+            <a asp-controller="Insurance" asp-action="Index" class="btn btn-secondary btn-sm">Back</a>
+        </div>
+
+    </div>
+</div>

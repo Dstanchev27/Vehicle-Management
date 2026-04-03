@@ -29,8 +29,8 @@ namespace VMAPP.Web.Extensions
         public static IServiceCollection AddIdentity(this IServiceCollection services)
         {
             services
-                .AddIdentity<ApplicationUser, IdentityRole>(IdentityOptionsProvider.GetIdentityOptions)
-                .AddRoles<IdentityRole>()
+                .AddIdentity<ApplicationUser, ApplicationRole>(IdentityOptionsProvider.GetIdentityOptions)
+                .AddRoles<ApplicationRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -42,6 +42,7 @@ namespace VMAPP.Web.Extensions
             services.AddScoped<IVSManagementService, VSManagementService>();
             services.AddScoped<IVSCarsService, VSCarsService>();
             services.AddScoped<IVSService, VSService>();
+            services.AddScoped<IVSInsuranceService, VSInsurance>();
 
             var supportedCultures = new[] { new CultureInfo("en-US") };
             services.Configure<RequestLocalizationOptions>(options =>
