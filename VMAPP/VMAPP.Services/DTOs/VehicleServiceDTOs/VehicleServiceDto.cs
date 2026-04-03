@@ -1,6 +1,6 @@
-namespace VMAPP.Services.DTOs
+namespace VMAPP.Services.DTOs.VehicleServiceDTOs
 {
-    public class InsuranceCompanyDto
+    public class VehicleServiceDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -10,7 +10,5 @@ namespace VMAPP.Services.DTOs
         public string Phone { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateTime CreatedOn { get; set; }
-        public string? CreatedById { get; set; }
-        public string? ModifiedById { get; set; }
     }
 }

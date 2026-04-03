@@ -1,29 +1,21 @@
 using VMAPP.Data.Models.Enums;
 
-namespace VMAPP.Web.Models.InsuranceModels
+namespace VMAPP.Services.DTOs.InsuranceDTOs
 {
-    public class InsuranceCompanyDetailsViewModel
+    public class InsuranceCompanyWithVehiclesDto
     {
         public int Id { get; set; }
-
-        public string Name { get; set; } = null!;
-
-        public string City { get; set; } = null!;
-
-        public string Address { get; set; } = null!;
-
-        public string Email { get; set; } = null!;
-
-        public string Description { get; set; } = null!;
-
-        public string Phone { get; set; } = null!;
-
+        public string Name { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public DateTime CreatedOn { get; set; }
-
-        public List<VehicleWithPolicyRowViewModel> Vehicles { get; set; } = new();
+        public List<VehicleWithPolicyIdDto> Vehicles { get; set; } = new();
     }
 
-    public class VehicleWithPolicyRowViewModel
+    public class VehicleWithPolicyIdDto
     {
         public int Id { get; set; }
         public int PolicyId { get; set; }

@@ -1,4 +1,4 @@
-namespace VMAPP.Services.DTOs
+namespace VMAPP.Services.DTOs.VehicleServiceDTOs
 {
     public class VehicleWithServiceRecordsDto
     {

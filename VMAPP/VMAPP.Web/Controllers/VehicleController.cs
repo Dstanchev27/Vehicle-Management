@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VMAPP.Services.DTOs;
+using VMAPP.Services.DTOs.VehicleDTOs;
 using VMAPP.Services.Interfaces;
 using VMAPP.Web.Models.VehicleViewModels;
 
@@ -42,7 +43,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVehicle(AddVehicleViewModel model)
         {
             if (!ModelState.IsValid)
@@ -89,7 +89,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVehicle(EditVehicleViewModel model)
         {
             if (!ModelState.IsValid)
@@ -113,7 +112,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVehicle(int id)
         {
             await this.vehicleService.DeleteAsync(id);

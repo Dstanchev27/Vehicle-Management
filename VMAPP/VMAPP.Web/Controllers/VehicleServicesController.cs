@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using VMAPP.Services.DTOs;
+using VMAPP.Services.DTOs.VehicleServiceDTOs;
 using VMAPP.Services.Interfaces;
 using VMAPP.Web.Models.VehicleServiceModels;
 using VMAPP.Web.Models.VehicleServiceCars;
@@ -46,7 +47,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddService(AddServiceViewModel newService)
         {
             if (!ModelState.IsValid)
@@ -144,7 +144,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVehicleToService([FromBody] AddVehicleToServiceRequest request)
         {
             var success = await vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId);
@@ -158,7 +157,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveVehicleFromService([FromBody] AddVehicleToServiceRequest request)
         {
             var (success, message) = await vsManagementService.RemoveVehicleFromServiceAsync(
@@ -198,7 +196,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditService(EditViewModel model)
         {
             if (!ModelState.IsValid)
@@ -223,7 +220,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteService(int id)
         {
             await vsManagementService.DeleteAsync(id);
@@ -286,7 +282,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddServiceRecord([FromBody] ServiceRecordFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -308,7 +303,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditServiceRecord([FromBody] ServiceRecordFormViewModel model)
         {
             if (!ModelState.IsValid)
@@ -337,7 +331,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteServiceRecord([FromBody] DeleteServiceRecordRequest request)
         {
             var deleted = await vsCarsService.DeleteServiceRecordAsync(request.Id);

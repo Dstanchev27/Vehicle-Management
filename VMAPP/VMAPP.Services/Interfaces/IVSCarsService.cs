@@ -1,4 +1,5 @@
-using VMAPP.Services.DTOs;
+using VMAPP.Services.DTOs.VehicleDTOs;
+using VMAPP.Services.DTOs.VehicleServiceDTOs;
 
 namespace VMAPP.Services.Interfaces
 {

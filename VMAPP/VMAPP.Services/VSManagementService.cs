@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+
 using VMAPP.Data;
 using VMAPP.Data.Models;
-using VMAPP.Services.DTOs;
+using VMAPP.Services.DTOs.VehicleDTOs;
+using VMAPP.Services.DTOs.VehicleServiceDTOs;
 using VMAPP.Services.Interfaces;
 
 namespace VMAPP.Services

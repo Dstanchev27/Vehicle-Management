@@ -1,6 +1,6 @@
 using VMAPP.Data.Models.Enums;
 
-namespace VMAPP.Services.DTOs
+namespace VMAPP.Services.DTOs.VehicleDTOs
 {
     public class VehicleDto
     {

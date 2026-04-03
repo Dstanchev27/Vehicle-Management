@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VMAPP.Services.DTOs;
+using VMAPP.Services.DTOs.InsuranceDTOs;
 using VMAPP.Services.Interfaces;
 using VMAPP.Web.Models.InsuranceModels;
 
@@ -43,7 +44,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddInsuranceCompany(AddInsuranceCompanyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -77,7 +77,7 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var dto = await insuranceService.GetByIdAsync(id);
+            var dto = await insuranceService.GetCompanyWithVehiclesAsync(id);
 
             if (dto == null)
             {
@@ -93,7 +93,57 @@ namespace VMAPP.Web.Controllers
                 Email = dto.Email,
                 Phone = dto.Phone,
                 Description = dto.Description,
-                CreatedOn = dto.CreatedOn
+                CreatedOn = dto.CreatedOn,
+                Vehicles = dto.Vehicles
+                    .Select(v => new VehicleWithPolicyRowViewModel
+                    {
+                        Id = v.Id,
+                        PolicyId = v.PolicyId,
+                        VIN = v.VIN,
+                        CarBrand = v.CarBrand,
+                        CarModel = v.CarModel,
+                        CreatedOnYear = v.CreatedOnYear,
+                        Color = v.Color,
+                        VehicleType = v.VehicleType,
+                        PolicyNumber = v.PolicyNumber
+                    })
+                    .ToList()
+            };
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PolicyDetails(int id)
+        {
+            var dto = await insuranceService.GetPolicyDetailsAsync(id);
+
+            if (dto == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            var model = new InsurancePolicyDetailsViewModel
+            {
+                Id = dto.Id,
+                PolicyNumber = dto.PolicyNumber,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                VehicleId = dto.VehicleId,
+                VehicleVIN = dto.VehicleVIN,
+                VehicleBrand = dto.VehicleBrand,
+                VehicleModel = dto.VehicleModel,
+                InsuranceCompanyId = dto.InsuranceCompanyId,
+                InsuranceCompanyName = dto.InsuranceCompanyName,
+                Claims = dto.Claims
+                    .Select(c => new InsuranceClaimRowViewModel
+                    {
+                        Id = c.Id,
+                        ClaimDate = c.ClaimDate,
+                        Description = c.Description,
+                        Amount = c.Amount
+                    })
+                    .ToList()
             };
 
             return View(model);
@@ -125,7 +175,6 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditInsuranceCompany(EditInsuranceCompanyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -151,11 +200,125 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteInsuranceCompany(int id)
         {
             await insuranceService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchVehicleByVin(string vin)
+        {
+            if (string.IsNullOrWhiteSpace(vin))
+            {
+                return Json(new { found = false, message = "Please enter a VIN to search." });
+            }
+
+            var vehicle = await insuranceService.GetVehicleByVinAsync(vin.Trim().ToUpperInvariant());
+
+            if (vehicle == null)
+            {
+                return Json(new { found = false, message = $"No vehicle found with VIN \"{vin.Trim().ToUpperInvariant()}\"." });
+            }
+
+            return Json(new
+            {
+                found = true,
+                vehicle = new
+                {
+                    id = vehicle.Id,
+                    vin = vehicle.VIN,
+                    carBrand = vehicle.CarBrand,
+                    carModel = vehicle.CarModel,
+                    createdOnYear = vehicle.CreatedOnYear,
+                    color = vehicle.Color,
+                    vehicleType = vehicle.VehicleType.ToString()
+                }
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPolicy([FromBody] InsurancePolicyFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Invalid data." });
+            }
+
+            var dto = new InsurancePolicyFormDto
+            {
+                VehicleId = model.VehicleId,
+                InsuranceCompanyId = model.InsuranceCompanyId,
+                PolicyNumber = model.PolicyNumber,
+                StartDate = model.StartDate,
+                EndDate = model.EndDate,
+                CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            };
+
+            await insuranceService.AddPolicyAsync(dto);
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeletePolicy([FromBody] DeletePolicyRequest request)
+        {
+            var deleted = await insuranceService.DeletePolicyAsync(request.Id);
+            if (!deleted)
+            {
+                return Json(new { success = false, message = "Policy not found." });
+            }
+
+            return Json(new { success = true });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetClaim(int id)
+        {
+            var dto = await insuranceService.GetClaimByIdAsync(id);
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            return Json(new
+            {
+                id = dto.Id,
+                claimDate = dto.ClaimDate.ToString("yyyy-MM-dd"),
+                description = dto.Description,
+                amount = dto.Amount
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddClaim([FromBody] InsuranceClaimFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Invalid data." });
+            }
+
+            var dto = new InsuranceClaimFormDto
+            {
+                InsurancePolicyId = model.InsurancePolicyId,
+                ClaimDate = model.ClaimDate,
+                Description = model.Description,
+                Amount = model.Amount
+            };
+
+            await insuranceService.AddClaimAsync(dto);
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteClaim([FromBody] DeleteClaimRequest request)
+        {
+            var deleted = await insuranceService.DeleteClaimAsync(request.Id);
+            if (!deleted)
+            {
+                return Json(new { success = false, message = "Claim not found." });
+            }
+
+            return Json(new { success = true });
         }
     }
 }

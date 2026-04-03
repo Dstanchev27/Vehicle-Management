@@ -1,5 +1,7 @@
-namespace VMAPP.Services.DTOs
+namespace VMAPP.Services.DTOs.VehicleServiceDTOs
 {
+    using VMAPP.Services.DTOs.VehicleDTOs;
+
     public class VehicleDetailsDto
     {
         public VehicleDto Vehicle { get; set; } = new();
