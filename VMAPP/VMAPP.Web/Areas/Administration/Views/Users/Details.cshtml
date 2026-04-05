@@ -1,0 +1,65 @@
+@model UserDetailsViewModel
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="table-wrapper">
+    <div class="table-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@ViewData["Title"]</h2>
+            <a asp-area="Administration" asp-controller="Users" asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header table-dark text-dark fw-semibold">
+                User Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input class="form-control" value="@Model.Email" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">City</label>
+                        <input class="form-control" value="@Model.City" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Address</label>
+                        <input class="form-control" value="@Model.Address" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">User Type</label>
+                        <input class="form-control" value="@Model.UserType" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Roles</label>
+                        <input class="form-control" value="@string.Join(", ", Model.Roles)" disabled />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-area="Administration"
+               asp-controller="Users"
+               asp-action="Edit"
+               asp-route-id="@Model.Id"
+               class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-area="Administration"
+               asp-controller="Users"
+               asp-action="Delete"
+               asp-route-id="@Model.Id"
+               class="btn btn-sm btn-danger">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
+
+    </div>
+</div>

@@ -11,7 +11,7 @@ namespace VMAPP.Data.Seeding
         public async Task SeedAsync(ApplicationDbContext dbContext)
         {
             if (dbContext == null)
-            {   
+            {
                 throw new ArgumentNullException(nameof(dbContext));
             }
 

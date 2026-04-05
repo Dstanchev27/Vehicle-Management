@@ -5,7 +5,14 @@
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<h3>@ViewData["Title"]</h3>
+<div class="card">
+    <div class="card-header table-dark text-dark fw-semibold">
+        @ViewData["Title"]
+    </div>
+    <div class="card-body">
+        <p>Your personal data will be downloaded as a JSON file.</p>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

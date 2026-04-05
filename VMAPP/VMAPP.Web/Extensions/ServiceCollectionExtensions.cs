@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 using System.Globalization;
-
+using Microsoft.AspNetCore.Identity.UI.Services;
 using VMAPP.Data;
 using VMAPP.Data.Models;
+
 using VMAPP.Services;
 using VMAPP.Services.Interfaces;
 
@@ -37,7 +38,7 @@ namespace VMAPP.Web.Extensions
             return services;
         }
 
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IVSManagementService, VSManagementService>();
             services.AddScoped<IVSCarsService, VSCarsService>();
@@ -52,6 +53,14 @@ namespace VMAPP.Web.Extensions
                 options.SupportedUICultures = supportedCultures;
             });
 
+            services.AddTransient<ICustomEmailSender>(
+                serviceProvider => new SendGridEmailSender(configuration["SendGridApiKey:ApiKey"]));
+            services.AddTransient<IEmailSender>(
+                serviceProvider => new Services.IdentityEmailSenderAdapter(
+                    serviceProvider.GetRequiredService<ICustomEmailSender>(),
+                    configuration["SendGridApiKey:SenderEmail"],
+                    configuration["SendGridApiKey:SenderName"]));
+
             return services;
         }
 
@@ -60,7 +69,7 @@ namespace VMAPP.Web.Extensions
             services.Configure<CookiePolicyOptions>(
                 options =>
                 {
-                    options.CheckConsentNeeded = context => true;
+                    options.CheckConsentNeeded = context => false;
                     options.MinimumSameSitePolicy = SameSiteMode.Lax;
                 });
 
@@ -71,7 +80,6 @@ namespace VMAPP.Web.Extensions
         {
             services.AddControllersWithViews(options =>
             {
-                options.Filters.Add(new AllowAnonymousFilter());
                 options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
             });
 
@@ -93,32 +101,12 @@ namespace VMAPP.Web.Extensions
                     option.LoginPath = new PathString("/Login");
                     option.Events.OnRedirectToLogin = context =>
                     {
-                        //context.HttpContext.Response.Redirect("https://" + context.HttpContext.Request.Host + "/Login");
-
-                        var request = context.HttpContext.Request;
-                        var redirectUrl = new UriBuilder
-                        {
-                            Scheme = "https",
-                            Host = request.Host.Host,
-                            Port = 441,
-                            Path = "/Login"
-                        };
-
-                        context.HttpContext.Response.Redirect(redirectUrl.ToString());
+                        context.HttpContext.Response.Redirect("/Login");
                         return Task.CompletedTask;
                     };
                     option.Events.OnRedirectToAccessDenied = context =>
                     {
-                        var request = context.HttpContext.Request;
-                        var redirectUrl = new UriBuilder
-                        {
-                            Scheme = "https",
-                            Host = request.Host.Host,
-                            Port = 441,
-                            Path = "/Home/Error403"
-                        };
-
-                        context.HttpContext.Response.Redirect(redirectUrl.ToString());
+                        context.HttpContext.Response.Redirect("/Home/Error?statusCode=403");
                         return Task.CompletedTask;
                     };
                 });

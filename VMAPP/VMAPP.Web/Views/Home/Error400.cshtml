@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Bad Request";
+}
+
+<div class="form-wrapper">
+    <div class="form-box text-center">
+        <div class="error-code">400</div>
+        <h2 class="error-title">Bad Request</h2>
+        <p class="error-message">
+            The request could not be understood by the server.<br />
+            Please check your input and try again.
+        </p>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">
+            &#8592; Back to Home
+        </a>
+    </div>
+</div>
+
+<style>
+    .error-code {
+        font-size: 6rem;
+        font-weight: 700;
+        color: #f0ad4e;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .error-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .error-message {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+</style>

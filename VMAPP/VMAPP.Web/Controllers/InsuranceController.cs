@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using VMAPP.Common;
 using VMAPP.Services.DTOs;
 using VMAPP.Services.DTOs.InsuranceDTOs;
 using VMAPP.Services.Interfaces;
@@ -7,6 +9,7 @@ using VMAPP.Web.Models.InsuranceModels;
 
 namespace VMAPP.Web.Controllers
 {
+    [Authorize(Roles = GlobalConstant.AdministratorRoleName + "," + GlobalConstant.InsuranceCompanyRoleName)]
     public class InsuranceController : Controller
     {
         private readonly IVSInsuranceService insuranceService;

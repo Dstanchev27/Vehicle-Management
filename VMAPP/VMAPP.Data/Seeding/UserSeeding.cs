@@ -33,6 +33,7 @@ namespace VMAPP.Data.Seeding
                 City = "Sofia",
                 Address = "1 Admin Street",
                 CreatedOn = DateTime.UtcNow,
+                TwoFactorEnabled = false,
             };
 
             var insuranceUser = new ApplicationUser
@@ -48,6 +49,7 @@ namespace VMAPP.Data.Seeding
                 City = "Plovdiv",
                 Address = "15 Insurance Avenue",
                 CreatedOn = DateTime.UtcNow,
+                TwoFactorEnabled = false,
             };
 
             var serviceUser = new ApplicationUser
@@ -63,6 +65,7 @@ namespace VMAPP.Data.Seeding
                 City = "Varna",
                 Address = "7 Mechanic Road",
                 CreatedOn = DateTime.UtcNow,
+                TwoFactorEnabled = false,
             };
 
             admin.PasswordHash = hasher.HashPassword(admin, "Admin123!");

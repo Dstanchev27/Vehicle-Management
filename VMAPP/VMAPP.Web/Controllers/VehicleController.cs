@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using VMAPP.Common;
 using VMAPP.Services.DTOs;
 using VMAPP.Services.DTOs.VehicleDTOs;
 using VMAPP.Services.Interfaces;
@@ -6,6 +8,7 @@ using VMAPP.Web.Models.VehicleViewModels;
 
 namespace VMAPP.Web.Controllers
 {
+    [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
     public class VehicleController : Controller
     {
         private readonly IVSService vehicleService;

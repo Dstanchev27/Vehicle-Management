@@ -1,0 +1,63 @@
+@model EditUserViewModel
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="form-wrapper">
+    <div class="form-box">
+        <h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+        <form asp-area="Administration" asp-controller="Users" asp-action="Edit" method="post" asp-antiforgery="true">
+            <input asp-for="Id" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="City"></label>
+                    <input asp-for="City" class="form-control" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Address"></label>
+                    <input asp-for="Address" class="form-control" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="UserType"></label>
+                    <select asp-for="UserType"
+                            class="form-select"
+                            asp-items="@(ViewBag.UserTypes as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="SelectedRole"></label>
+                <select asp-for="SelectedRole"
+                        class="form-select"
+                        asp-items="@(ViewBag.Roles as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
+                    <option value="">-- Select Role --</option>
+                </select>
+                <span asp-validation-for="SelectedRole" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                <a asp-area="Administration" asp-controller="Users" asp-action="Index" class="btn btn-secondary btn-sm">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

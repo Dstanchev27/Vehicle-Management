@@ -1,3 +1,5 @@
+using Serilog;
+
 using VMAPP.Web.Extensions;
 using VMAPP.Web.Extensions.Middleware;
 
@@ -11,6 +13,8 @@ namespace VMAPP.Web
             {
                 var builder = WebApplication.CreateBuilder(args);
 
+                builder.AddSerilog();
+
                 var services = builder.Services;
 
                 services
@@ -19,7 +23,7 @@ namespace VMAPP.Web
                     .AddControllersAndViews()
                     .AddCookieConsent()
                     .AddControllersAndViews()
-                    .AddApplicationServices()
+                    .AddApplicationServices(builder.Configuration)
                     .AddSecurity()
                     .AddRazorPages();
 
@@ -28,7 +32,6 @@ namespace VMAPP.Web
                 app
                     .UseRequestLocalization()
                     .AddErrorHandler()
-                    //.InsertUserInLog()
                     .UseHsts()
                     .UseHttpsRedirection()
                     .UseCookiePolicy()
@@ -36,15 +39,25 @@ namespace VMAPP.Web
                     .UseRouting()
                     .UseAuthentication()
                     .UseAuthorization()
+                    .InsertUserInLog()
+                    .UseSerilogRequestLogging()
+                    .UseMiddleware<GlobalExceptionMiddleware>()
                     .UseMiddleware<EnforceAdmin2FAMiddleware>()
                     .InsertEndpoints();
+
+                Log.Information("Starting up the VMApp!");
 
                 await app.RunAsync();
             }
             catch (Exception ex)
             {
-                await Console.Error.WriteLineAsync($"Application failed to start: {ex}");
-                throw;
+                Log.Fatal(ex, "There was a problem starting the service!");
+                return;
+            }
+            finally
+            {
+                Log.Fatal("The process was killed!");
+                Log.CloseAndFlush();
             }
         }
     }

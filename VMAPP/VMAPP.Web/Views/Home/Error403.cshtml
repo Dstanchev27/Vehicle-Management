@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="form-wrapper">
+    <div class="form-box text-center">
+        <div class="error-code">403</div>
+        <h2 class="error-title">Access Denied</h2>
+        <p class="error-message">
+            You do not have permission to view this page.<br />
+            Please contact your administrator if you believe this is a mistake.
+        </p>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">
+            &#8592; Back to Home
+        </a>
+    </div>
+</div>
+
+<style>
+    .error-code {
+        font-size: 6rem;
+        font-weight: 700;
+        color: #fd7e14;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .error-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .error-message {
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+</style>

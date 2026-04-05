@@ -9,7 +9,9 @@
     public static class GlobalConstant
     {
         public const string SystemName = "VMAPP";
-        public const string AdministratorRoleName = "Administrator";
+        public const string AdministratorRoleName = "ProgramAdministrator";
+        public const string InsuranceCompanyRoleName = "InsuranceCompany";
+        public const string VehicleServiceRoleName = "VehicleService";
         public const string VINRegex = @"^[A-HJ-NPR-Z0-9]{17}$";
 
         public const int VehicleServiceName = 150;

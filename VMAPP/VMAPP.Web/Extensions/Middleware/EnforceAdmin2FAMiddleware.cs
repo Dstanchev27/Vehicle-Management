@@ -23,7 +23,7 @@
 
                 var path = context.Request.Path.Value ?? "";
 
-                
+
                 if (isAdmin && !has2FA &&
                     !path.StartsWith("/Identity/Account/Manage/EnableAuthenticator", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/Identity/Account/Logout", StringComparison.OrdinalIgnoreCase) &&

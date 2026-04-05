@@ -48,7 +48,6 @@ namespace VMAPP.Data.Models
         [MaxLength(20)]
         public string Phone { get; set; } = null!;
 
-        // Navigation properties
         public ICollection<ServiceRecord> ServiceRecords { get; set; }
             = new HashSet<ServiceRecord>();
     }

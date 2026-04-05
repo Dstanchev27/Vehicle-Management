@@ -1,22 +1,35 @@
-﻿using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
-
-using VMAPP.Data;
-using VMAPP.Data.Seeding;
+﻿using Serilog;
+using Serilog.Context;
 
 namespace VMAPP.Web.Extensions
 {
     public static class ApplicationsBuilderExtensions
     {
+        public static WebApplicationBuilder AddSerilog(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.AddSerilog();
+            });
+
+            Log.Logger = SerilogExtensions.CreateLogger(builder.Configuration);
+
+            builder.Host.UseSerilog();
+
+            return builder;
+        }
+
         public static IApplicationBuilder AddErrorHandler(this IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
-            if (!env.IsDevelopment())
+            if (env.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
+                app.UseDeveloperExceptionPage();
             }
+
+            app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
             return app;
         }
@@ -24,6 +37,10 @@ namespace VMAPP.Web.Extensions
         public static IApplicationBuilder InsertEndpoints(this IApplicationBuilder app)
         {
             var endpointApp = (IEndpointRouteBuilder)app;
+
+            endpointApp.MapControllerRoute(
+                name: "Administration",
+                pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
             endpointApp.MapControllerRoute(
                 name: "default",
@@ -34,7 +51,7 @@ namespace VMAPP.Web.Extensions
             return app;
         }
 
-       /* public static IApplicationBuilder InsertUserInLog(this IApplicationBuilder app)
+        public static IApplicationBuilder InsertUserInLog(this IApplicationBuilder app)
         {
             app.Use(async (httpContext, next) =>
             {
@@ -47,6 +64,6 @@ namespace VMAPP.Web.Extensions
             });
 
             return app;
-        }*/
+        }
     }
 }

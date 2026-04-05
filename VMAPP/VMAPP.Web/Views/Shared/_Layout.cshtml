@@ -11,13 +11,28 @@
     <link href="~/datatables/css/jquery.dataTables.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
+@using Microsoft.AspNetCore.Identity
+@using VMAPP.Data.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 <body>
+@{
+    bool has2fa = false;
+    if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        if (currentUser != null)
+        {
+            has2fa = await UserManager.GetTwoFactorEnabledAsync(currentUser);
+        }
+    }
+}
 
     <header class="vmapp-header-fixed">
         <nav class="navbar navbar-expand-sm vmapp-header border-bottom">
             <div class="container-fluid">
 
-                <a asp-controller="Home" asp-action="Index">
+                <a asp-area="" asp-controller="Home" asp-action="Index">
                     <img id="header-image"
                          src="~/img/VMAPP_header_photo.png"
                          alt="VMAPP Logo" />
@@ -34,29 +49,64 @@
                     <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link buttons-color-header"
+                               asp-area=""
                                asp-controller="Home"
                                asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link buttons-color-header"
+                               asp-area=""
                                asp-controller="Home"
                                asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link buttons-color-header"
-                               asp-controller="VehicleServices"
-                               asp-action="Index">Vehicle Services</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link buttons-color-header"
-                               asp-controller="Vehicle"
-                               asp-action="Index">Vehicle</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link buttons-color-header"
-                               asp-controller="Insurance"
-                               asp-action="Index">Insurance</a>
-                        </li>
+
+                        @if (SignInManager.IsSignedIn(User) && has2fa)
+                        {
+                            @if (User.IsInRole("ProgramAdministrator") || User.IsInRole("VehicleService"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link buttons-color-header"
+                                       asp-area=""
+                                       asp-controller="VehicleServices"
+                                       asp-action="Index">Vehicle Services</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("ProgramAdministrator") || User.IsInRole("InsuranceCompany"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link buttons-color-header"
+                                       asp-area=""
+                                       asp-controller="Insurance"
+                                       asp-action="Index">Insurance</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("ProgramAdministrator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link buttons-color-header"
+                                       asp-area=""
+                                       asp-controller="Vehicle"
+                                       asp-action="Index">Vehicle</a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle buttons-color-header"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        Administration
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-area="Administration"
+                                               asp-controller="Users"
+                                               asp-action="Index">Users</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                        }
                     </ul>
                 </div>
                 <partial name="_LoginPartial" />
@@ -72,6 +122,7 @@
         <div class="container footer-text-color">
             &copy; 2026 - VMAPP -
             <a class="footer-text-color"
+               asp-area=""
                asp-controller="Home"
                asp-action="Privacy">Privacy</a>
         </div>
