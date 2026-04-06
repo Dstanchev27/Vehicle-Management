@@ -332,6 +332,38 @@ namespace VMAPP.Services
             await this.dbContext.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> AssignUserAsync(string userId, int? companyId)
+        {
+            var user = await this.dbContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (companyId.HasValue)
+            {
+                var exists = await this.dbContext.InsuranceCompanies
+                    .AnyAsync(c => c.Id == companyId.Value);
+                if (!exists)
+                {
+                    return false;
+                }
+            }
+
+            user.InsuranceCompanyId = companyId;
+            await this.dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<int?> GetCompanyIdByPolicyIdAsync(int policyId)
+        {
+            return await this.dbContext.InsurancePolicies
+                .AsNoTracking()
+                .Where(p => p.Id == policyId)
+                .Select(p => (int?)p.InsuranceCompanyId)
+                .FirstOrDefaultAsync();
+        }
     }
 }
 

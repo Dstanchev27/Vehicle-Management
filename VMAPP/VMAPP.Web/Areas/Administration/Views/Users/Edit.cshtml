@@ -34,11 +34,36 @@
                 <div class="col-md-6 mb-3">
                     <label asp-for="SelectedRole"></label>
                     <select asp-for="SelectedRole"
+                            id="roleSelect"
                             class="form-select"
                             asp-items="@(ViewBag.Roles as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
                         <option value="">-- Select Role --</option>
                     </select>
                     <span asp-validation-for="SelectedRole" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div id="insurance-section" class="row" style="display:none">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="InsuranceCompanyId">Insurance Company</label>
+                    <select asp-for="InsuranceCompanyId"
+                            class="form-select"
+                            asp-items="@(ViewBag.InsuranceCompanies as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
+                        <option value="">-- Select Insurance Company --</option>
+                    </select>
+                    <span asp-validation-for="InsuranceCompanyId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div id="vehicleservice-section" class="row" style="display:none">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="VehicleServiceId">Vehicle Service</label>
+                    <select asp-for="VehicleServiceId"
+                            class="form-select"
+                            asp-items="@(ViewBag.VehicleServices as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
+                        <option value="">-- Select Vehicle Service --</option>
+                    </select>
+                    <span asp-validation-for="VehicleServiceId" class="text-danger"></span>
                 </div>
             </div>
 
@@ -52,4 +77,20 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const roleSelect = document.getElementById('roleSelect');
+            const insuranceSection = document.getElementById('insurance-section');
+            const vehicleServiceSection = document.getElementById('vehicleservice-section');
+
+            function toggleSections() {
+                const role = roleSelect.value;
+                insuranceSection.style.display = role === '@VMAPP.Common.GlobalConstant.InsuranceCompanyRoleName' ? '' : 'none';
+                vehicleServiceSection.style.display = role === '@VMAPP.Common.GlobalConstant.VehicleServiceRoleName' ? '' : 'none';
+            }
+
+            roleSelect.addEventListener('change', toggleSections);
+            toggleSections();
+        })();
+    </script>
 }

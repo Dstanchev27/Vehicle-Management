@@ -50,5 +50,8 @@ namespace VMAPP.Data.Models
 
         public ICollection<InsurancePolicy> InsurancePolicies { get; set; }
             = new HashSet<InsurancePolicy>();
+
+        public ICollection<ApplicationUser> Users { get; set; }
+            = new HashSet<ApplicationUser>();
     }
 }

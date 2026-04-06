@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VMAPP.Common;
+using VMAPP.Data.Models;
 using VMAPP.Services.DTOs;
 using VMAPP.Services.DTOs.InsuranceDTOs;
 using VMAPP.Services.Interfaces;
@@ -13,16 +15,32 @@ namespace VMAPP.Web.Controllers
     public class InsuranceController : Controller
     {
         private readonly IVSInsuranceService insuranceService;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly ILogger<InsuranceController> logger;
 
-        public InsuranceController(IVSInsuranceService insuranceService, ILogger<InsuranceController> logger)
+        public InsuranceController(
+            IVSInsuranceService insuranceService,
+            UserManager<ApplicationUser> userManager,
+            ILogger<InsuranceController> logger)
         {
             this.insuranceService = insuranceService;
+            this.userManager = userManager;
             this.logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
+            if (IsInsuranceCompanyUser())
+            {
+                var companyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                if (companyId == null)
+                {
+                    return View("Error");
+                }
+
+                return RedirectToAction(nameof(Details), new { id = companyId.Value });
+            }
+
             var dtos = await insuranceService.GetAllAsync();
 
             var companies = dtos
@@ -78,6 +96,15 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            if (IsInsuranceCompanyUser())
+            {
+                var userCompanyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                if (userCompanyId != id)
+                {
+                    return Forbid();
+                }
+            }
+
             var dto = await insuranceService.GetCompanyWithVehiclesAsync(id);
 
             if (dto == null)
@@ -124,6 +151,15 @@ namespace VMAPP.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            if (IsInsuranceCompanyUser())
+            {
+                var userCompanyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                if (userCompanyId != dto.InsuranceCompanyId)
+                {
+                    return Forbid();
+                }
+            }
+
             var model = new InsurancePolicyDetailsViewModel
             {
                 Id = dto.Id,
@@ -151,6 +187,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> EditInsuranceCompany(int id)
         {
             var dto = await insuranceService.GetByIdAsync(id);
@@ -176,6 +213,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> EditInsuranceCompany(EditInsuranceCompanyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -202,6 +240,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> DeleteInsuranceCompany(int id)
         {
             await insuranceService.DeleteAsync(id);
@@ -248,6 +287,15 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message = "Invalid data." });
             }
 
+            if (IsInsuranceCompanyUser())
+            {
+                var userCompanyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                if (userCompanyId != model.InsuranceCompanyId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var dto = new InsurancePolicyFormDto
             {
                 VehicleId = model.VehicleId,
@@ -266,6 +314,16 @@ namespace VMAPP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeletePolicy([FromBody] DeletePolicyRequest request)
         {
+            if (IsInsuranceCompanyUser())
+            {
+                var userCompanyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                var policyCompanyId = await insuranceService.GetCompanyIdByPolicyIdAsync(request.Id);
+                if (userCompanyId != policyCompanyId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var deleted = await insuranceService.DeletePolicyAsync(request.Id);
             if (!deleted)
             {
@@ -302,6 +360,16 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message = "Invalid data." });
             }
 
+            if (IsInsuranceCompanyUser())
+            {
+                var userCompanyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                var policyCompanyId = await insuranceService.GetCompanyIdByPolicyIdAsync(model.InsurancePolicyId);
+                if (userCompanyId != policyCompanyId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var dto = new InsuranceClaimFormDto
             {
                 InsurancePolicyId = model.InsurancePolicyId,
@@ -318,6 +386,22 @@ namespace VMAPP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteClaim([FromBody] DeleteClaimRequest request)
         {
+            if (IsInsuranceCompanyUser())
+            {
+                var claim = await insuranceService.GetClaimByIdAsync(request.Id);
+                if (claim == null)
+                {
+                    return Json(new { success = false, message = "Claim not found." });
+                }
+
+                var userCompanyId = await GetCurrentUserInsuranceCompanyIdAsync();
+                var policyCompanyId = await insuranceService.GetCompanyIdByPolicyIdAsync(claim.InsurancePolicyId);
+                if (userCompanyId != policyCompanyId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var deleted = await insuranceService.DeleteClaimAsync(request.Id);
             if (!deleted)
             {
@@ -326,6 +410,21 @@ namespace VMAPP.Web.Controllers
 
             logger.LogInformation("Insurance claim with id {Id} was successfully deleted.", request.Id);
             return Json(new { success = true });
+        }
+
+        private bool IsInsuranceCompanyUser()
+            => User.IsInRole(GlobalConstant.InsuranceCompanyRoleName);
+
+        private async Task<int?> GetCurrentUserInsuranceCompanyIdAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return null;
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+            return user?.InsuranceCompanyId;
         }
     }
 }

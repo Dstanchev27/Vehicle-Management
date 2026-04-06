@@ -18,5 +18,7 @@ namespace VMAPP.Services.Interfaces
         Task<InsuranceClaimFormDto?> GetClaimByIdAsync(int id);
         Task<int> AddClaimAsync(InsuranceClaimFormDto dto);
         Task<bool> DeleteClaimAsync(int id);
+        Task<bool> AssignUserAsync(string userId, int? companyId);
+        Task<int?> GetCompanyIdByPolicyIdAsync(int policyId);
     }
 }

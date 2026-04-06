@@ -43,5 +43,11 @@ namespace VMAPP.Data.Models
         public ICollection<InsurancePolicy> CreatedInsurancePolicies { get; set; } = new List<InsurancePolicy>();
         public ICollection<InsuranceCompany> CreatedInsuranceCompanies { get; set; } = new List<InsuranceCompany>();
         public ICollection<ServiceRecord> CreatedServiceRecords { get; set; } = new List<ServiceRecord>();
+
+        public int? InsuranceCompanyId { get; set; }
+        public InsuranceCompany? InsuranceCompany { get; set; }
+
+        public int? VehicleServiceId { get; set; }
+        public VehicleService? VehicleService { get; set; }
     }
 }

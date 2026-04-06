@@ -8,6 +8,7 @@
 
     using VMAPP.Common;
     using VMAPP.Data.Models;
+    using VMAPP.Services.Interfaces;
     using VMAPP.Web.Areas.Administration.Models;
 
     [Area("Administration")]
@@ -16,15 +17,21 @@
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly IVSManagementService _vsManagementService;
+        private readonly IVSInsuranceService _insuranceService;
         private readonly ILogger<UsersController> _logger;
 
         public UsersController(
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
+            IVSManagementService vsManagementService,
+            IVSInsuranceService insuranceService,
             ILogger<UsersController> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _vsManagementService = vsManagementService;
+            _insuranceService = insuranceService;
             _logger = logger;
         }
 
@@ -74,9 +81,9 @@
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            PopulateSelectLists();
+            await PopulateSelectListsAsync();
             return View();
         }
 
@@ -85,7 +92,7 @@
         {
             if (!ModelState.IsValid)
             {
-                PopulateSelectLists();
+                await PopulateSelectListsAsync();
                 return View(model);
             }
 
@@ -104,7 +111,7 @@
             {
                 foreach (var e in result.Errors)
                     ModelState.AddModelError("", e.Description);
-                PopulateSelectLists();
+                await PopulateSelectListsAsync();
                 return View(model);
             }
 
@@ -114,8 +121,17 @@
                 foreach (var e in roleResult.Errors)
                     ModelState.AddModelError("", e.Description);
                 await _userManager.DeleteAsync(user);
-                PopulateSelectLists();
+                await PopulateSelectListsAsync();
                 return View(model);
+            }
+
+            if (model.SelectedRole == GlobalConstant.InsuranceCompanyRoleName && model.InsuranceCompanyId.HasValue)
+            {
+                await _insuranceService.AssignUserAsync(user.Id, model.InsuranceCompanyId);
+            }
+            else if (model.SelectedRole == GlobalConstant.VehicleServiceRoleName && model.VehicleServiceId.HasValue)
+            {
+                await _vsManagementService.AssignUserAsync(user.Id, model.VehicleServiceId);
             }
 
             _logger.LogInformation("User '{Email}' was successfully created with role '{Role}'.", user.Email, model.SelectedRole);
@@ -137,10 +153,12 @@
                 Email = u.Email,
                 City = u.City,
                 Address = u.Address,
-                SelectedRole = roles.FirstOrDefault() ?? ""
+                SelectedRole = roles.FirstOrDefault() ?? "",
+                InsuranceCompanyId = u.InsuranceCompanyId,
+                VehicleServiceId = u.VehicleServiceId
             };
 
-            PopulateSelectLists();
+            await PopulateSelectListsAsync();
             return View(vm);
         }
 
@@ -149,7 +167,7 @@
         {
             if (!ModelState.IsValid)
             {
-                PopulateSelectLists();
+                await PopulateSelectListsAsync();
                 return View(model);
             }
 
@@ -166,6 +184,19 @@
                 await _userManager.RemoveFromRoleAsync(u, currentRoles.First());
 
             await _userManager.AddToRoleAsync(u, model.SelectedRole);
+
+            u.InsuranceCompanyId = null;
+            u.VehicleServiceId = null;
+
+            if (model.SelectedRole == GlobalConstant.InsuranceCompanyRoleName && model.InsuranceCompanyId.HasValue)
+            {
+                await _insuranceService.AssignUserAsync(u.Id, model.InsuranceCompanyId);
+            }
+            else if (model.SelectedRole == GlobalConstant.VehicleServiceRoleName && model.VehicleServiceId.HasValue)
+            {
+                await _vsManagementService.AssignUserAsync(u.Id, model.VehicleServiceId);
+            }
+
             await _userManager.UpdateAsync(u);
 
             _logger.LogInformation("User '{Email}' was successfully updated with role '{Role}'.", u.Email, model.SelectedRole);
@@ -208,12 +239,20 @@
             return RedirectToAction(nameof(Index));
         }
 
-        private void PopulateSelectLists()
+        private async Task PopulateSelectListsAsync()
         {
             ViewBag.Roles = _roleManager.Roles
                 .Select(r => r.Name)
                 .ToList()
                 .Select(r => new SelectListItem(r, r));
+
+            var companies = await _insuranceService.GetAllAsync();
+            ViewBag.InsuranceCompanies = companies
+                .Select(c => new SelectListItem(c.Name, c.Id.ToString()));
+
+            var services = await _vsManagementService.GetAllAsync();
+            ViewBag.VehicleServices = services
+                .Select(s => new SelectListItem(s.Name, s.Id.ToString()));
         }
     }
 }

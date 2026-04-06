@@ -50,5 +50,8 @@ namespace VMAPP.Data.Models
 
         public ICollection<ServiceRecord> ServiceRecords { get; set; }
             = new HashSet<ServiceRecord>();
+
+        public ICollection<ApplicationUser> Users { get; set; }
+            = new HashSet<ApplicationUser>();
     }
 }

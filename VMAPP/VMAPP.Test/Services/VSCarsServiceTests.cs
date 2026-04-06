@@ -275,5 +275,13 @@ namespace VMAPP.Test.Services
 
             Assert.That(result, Is.False);
         }
+
+        [Test]
+        public async Task GetVehicleWithServiceRecordsAsync_WhenVehicleNotFound_ReturnsNull()
+        {
+            var result = await service.GetVehicleWithServiceRecordsAsync(999, 1);
+
+            Assert.That(result, Is.Null);
+        }
     }
 }

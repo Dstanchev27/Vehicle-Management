@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VMAPP.Common;
+using VMAPP.Data.Models;
 using VMAPP.Services.DTOs;
 using VMAPP.Services.DTOs.VehicleServiceDTOs;
 using VMAPP.Services.Interfaces;
@@ -16,17 +18,34 @@ namespace VMAPP.Web.Controllers
     {
         private readonly IVSManagementService vsManagementService;
         private readonly IVSCarsService vsCarsService;
+        private readonly UserManager<ApplicationUser> userManager;
         private readonly ILogger<VehicleServicesController> logger;
 
-        public VehicleServicesController(IVSManagementService vsManagementService, IVSCarsService vsCarsService, ILogger<VehicleServicesController> logger)
+        public VehicleServicesController(
+            IVSManagementService vsManagementService,
+            IVSCarsService vsCarsService,
+            UserManager<ApplicationUser> userManager,
+            ILogger<VehicleServicesController> logger)
         {
             this.vsManagementService = vsManagementService;
             this.vsCarsService = vsCarsService;
+            this.userManager = userManager;
             this.logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
+            if (IsVehicleServiceUser())
+            {
+                var serviceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (serviceId == null)
+                {
+                    return View("Error");
+                }
+
+                return RedirectToAction(nameof(Details), new { id = serviceId.Value });
+            }
+
             var dtos = await vsManagementService.GetAllAsync();
 
             var services = dtos
@@ -81,6 +100,15 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != id)
+                {
+                    return Forbid();
+                }
+            }
+
             var dto = await vsManagementService.GetVehiclesServiceDetailsByIdAsync(id);
 
             if (dto == null)
@@ -149,6 +177,15 @@ namespace VMAPP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> AddVehicleToService([FromBody] AddVehicleToServiceRequest request)
         {
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != request.ServiceId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             var success = await vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId, userId);
 
@@ -164,6 +201,15 @@ namespace VMAPP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> RemoveVehicleFromService([FromBody] AddVehicleToServiceRequest request)
         {
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != request.ServiceId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var (success, message) = await vsManagementService.RemoveVehicleFromServiceAsync(
                 request.ServiceId, request.VehicleId);
 
@@ -177,6 +223,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> EditService(int id)
         {
             var dto = await vsManagementService.GetByIdAsync(id);
@@ -202,6 +249,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> EditService(EditViewModel model)
         {
             if (!ModelState.IsValid)
@@ -227,6 +275,7 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> DeleteService(int id)
         {
             await vsManagementService.DeleteAsync(id);
@@ -237,6 +286,15 @@ namespace VMAPP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> ServiceVehicle(int vehicleId, int serviceId)
         {
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != serviceId)
+                {
+                    return Forbid();
+                }
+            }
+
             var dto = await vsCarsService.GetVehicleWithServiceRecordsAsync(vehicleId, serviceId);
 
             if (dto == null)
@@ -278,6 +336,15 @@ namespace VMAPP.Web.Controllers
                 return NotFound();
             }
 
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != dto.VehicleServiceId)
+                {
+                    return Forbid();
+                }
+            }
+
             return Json(new
             {
                 id = dto.Id,
@@ -295,6 +362,15 @@ namespace VMAPP.Web.Controllers
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "Invalid data." });
+            }
+
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != model.VehicleServiceId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
             }
 
             var dto = new ServiceRecordDto
@@ -318,6 +394,15 @@ namespace VMAPP.Web.Controllers
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "Invalid data." });
+            }
+
+            if (IsVehicleServiceUser())
+            {
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != model.VehicleServiceId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
             }
 
             var dto = new ServiceRecordDto
@@ -344,6 +429,21 @@ namespace VMAPP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteServiceRecord([FromBody] DeleteServiceRecordRequest request)
         {
+            if (IsVehicleServiceUser())
+            {
+                var record = await vsCarsService.GetServiceRecordByIdAsync(request.Id);
+                if (record == null)
+                {
+                    return Json(new { success = false, message = "Record not found." });
+                }
+
+                var userServiceId = await GetCurrentUserVehicleServiceIdAsync();
+                if (userServiceId != record.VehicleServiceId)
+                {
+                    return Json(new { success = false, message = "Access denied." });
+                }
+            }
+
             var deleted = await vsCarsService.DeleteServiceRecordAsync(request.Id);
             if (!deleted)
             {
@@ -352,6 +452,21 @@ namespace VMAPP.Web.Controllers
 
             logger.LogInformation("Service record with id {Id} was successfully deleted.", request.Id);
             return Json(new { success = true });
+        }
+
+        private bool IsVehicleServiceUser()
+            => User.IsInRole(GlobalConstant.VehicleServiceRoleName);
+
+        private async Task<int?> GetCurrentUserVehicleServiceIdAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return null;
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+            return user?.VehicleServiceId;
         }
     }
 }

@@ -94,6 +94,21 @@ namespace VMAPP.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.HasOne(u => u.InsuranceCompany)
+                    .WithMany(ic => ic.Users)
+                    .HasForeignKey(u => u.InsuranceCompanyId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(u => u.VehicleService)
+                    .WithMany(vs => vs.Users)
+                    .HasForeignKey(u => u.VehicleServiceId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             base.OnModelCreating(modelBuilder);
         }
 

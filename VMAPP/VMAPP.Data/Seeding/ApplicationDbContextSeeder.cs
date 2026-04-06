@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace VMAPP.Data.Seeding
@@ -18,10 +16,11 @@ namespace VMAPP.Data.Seeding
             var seeders = new List<ISeeder>
             {
                 new RoleSeeding(),
-                new UserSeeding(),
+                new AdminUserSeeding(),       
                 new VehicleSeeding(),
-                new VehicleServiceSeeding(),
-                new InsuranceCompanySeeding(),
+                new VehicleServiceSeeding(),   
+                new InsuranceCompanySeeding(), 
+                new UserSeeding(),             
                 new ServiceRecordSeeding(),
                 new InsurancePolicySeeding(),
                 new InsuranceClaimSeeding(),

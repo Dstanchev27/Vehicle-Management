@@ -263,5 +263,28 @@ namespace VMAPP.Services
 
             return (true, null);
         }
+
+        public async Task<bool> AssignUserAsync(string userId, int? serviceId)
+        {
+            var user = await this.dbContext.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (serviceId.HasValue)
+            {
+                var exists = await this.dbContext.VehicleServices
+                    .AnyAsync(s => s.Id == serviceId.Value);
+                if (!exists)
+                {
+                    return false;
+                }
+            }
+
+            user.VehicleServiceId = serviceId;
+            await this.dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

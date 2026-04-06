@@ -15,11 +15,7 @@ namespace VMAPP.Data.Seeding
                 return;
             }
 
-            var createdBy = dbContext.Users.FirstOrDefault();
-            if (createdBy == null)
-            {
-                return;
-            }
+            const string adminId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
 
             var companies = new List<InsuranceCompany>
             {
@@ -31,7 +27,7 @@ namespace VMAPP.Data.Seeding
                     Address = "100 Liberty Street",
                     Email = "contact@safedrive.com",
                     Phone = "555-1001",
-                    CreatedById = createdBy.Id,
+                    CreatedById = adminId,
                     CreatedOn = DateTime.UtcNow
                 },
                 new InsuranceCompany
@@ -42,7 +38,7 @@ namespace VMAPP.Data.Seeding
                     Address = "200 Sunset Boulevard",
                     Email = "info@autoshield.com",
                     Phone = "555-1002",
-                    CreatedById = createdBy.Id,
+                    CreatedById = adminId,
                     CreatedOn = DateTime.UtcNow
                 },
                 new InsuranceCompany
@@ -53,7 +49,7 @@ namespace VMAPP.Data.Seeding
                     Address = "300 Michigan Avenue",
                     Email = "support@premiermotor.com",
                     Phone = "555-1003",
-                    CreatedById = createdBy.Id,
+                    CreatedById = adminId,
                     CreatedOn = DateTime.UtcNow
                 },
                 new InsuranceCompany
@@ -64,7 +60,7 @@ namespace VMAPP.Data.Seeding
                     Address = "400 Energy Corridor",
                     Email = "hello@trustauto.com",
                     Phone = "555-1004",
-                    CreatedById = createdBy.Id,
+                    CreatedById = adminId,
                     CreatedOn = DateTime.UtcNow
                 },
                 new InsuranceCompany
@@ -75,7 +71,7 @@ namespace VMAPP.Data.Seeding
                     Address = "500 Market Street",
                     Email = "info@greenroad.com",
                     Phone = "555-1005",
-                    CreatedById = createdBy.Id,
+                    CreatedById = adminId,
                     CreatedOn = DateTime.UtcNow
                 }
             };

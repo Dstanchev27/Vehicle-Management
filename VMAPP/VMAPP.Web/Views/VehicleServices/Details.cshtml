@@ -9,9 +9,12 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>@ViewData["Title"]</h2>
-            <a asp-controller="VehicleServices" asp-action="Index" class="btn btn-secondary btn-sm">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </a>
+            @if (User.IsInRole(VMAPP.Common.GlobalConstant.AdministratorRoleName))
+            {
+                <a asp-controller="VehicleServices" asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            }
         </div>
 
         <div class="card mb-4">

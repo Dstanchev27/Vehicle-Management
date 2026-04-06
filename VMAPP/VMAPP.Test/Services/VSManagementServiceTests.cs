@@ -303,5 +303,100 @@ namespace VMAPP.Test.Services
             Assert.That(result.Success, Is.True);
             Assert.That(await dbContext.ServiceRecords.CountAsync(), Is.EqualTo(0));
         }
+
+        [Test]
+        public async Task AssignUserAsync_WhenUserNotFound_ReturnsFalse()
+        {
+            var result = await service.AssignUserAsync("nonexistent-user-id", null);
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenServiceNotFound_ReturnsFalse()
+        {
+            var user = new ApplicationUser
+            {
+                Id = "test-user-id",
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.AssignUserAsync("test-user-id", 999);
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenUserAndServiceExist_SetsServiceIdAndReturnsTrue()
+        {
+            var user = new ApplicationUser
+            {
+                Id = "test-user-id",
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            var vs = new VehicleService { Name = "AutoFix", Description = "Repairs", City = "Sofia", Address = "Str 1", Email = "a@a.com", Phone = "0888000000", CreatedOn = DateTime.UtcNow };
+            dbContext.Users.Add(user);
+            dbContext.VehicleServices.Add(vs);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.AssignUserAsync("test-user-id", vs.Id);
+
+            Assert.That(result, Is.True);
+            var updatedUser = await dbContext.Users.FindAsync("test-user-id");
+            Assert.That(updatedUser!.VehicleServiceId, Is.EqualTo(vs.Id));
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenServiceIdIsNull_ClearsAssignmentAndReturnsTrue()
+        {
+            var user = new ApplicationUser
+            {
+                Id = "test-user-id",
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.AssignUserAsync("test-user-id", null);
+
+            Assert.That(result, Is.True);
+            var updatedUser = await dbContext.Users.FindAsync("test-user-id");
+            Assert.That(updatedUser!.VehicleServiceId, Is.Null);
+        }
+
+        [Test]
+        public async Task CreateAsync_WhenCreatedOnIsProvided_PersistsProvidedDate()
+        {
+            var explicitDate = new DateTime(2023, 6, 15, 10, 0, 0, DateTimeKind.Utc);
+            var dto = new VehicleServiceDto
+            {
+                Name = "AutoFix",
+                Description = "Repairs",
+                City = "Sofia",
+                Address = "Str 1",
+                Email = "a@a.com",
+                Phone = "0888000000",
+                CreatedOn = explicitDate
+            };
+
+            var id = await service.CreateAsync(dto);
+
+            var created = await dbContext.VehicleServices.FindAsync(id);
+            Assert.That(created!.CreatedOn, Is.EqualTo(explicitDate));
+        }
     }
 }

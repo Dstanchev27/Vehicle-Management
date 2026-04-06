@@ -20,5 +20,8 @@ namespace VMAPP.Web.Areas.Administration.Models
 
         [Required]
         public string SelectedRole { get; set; } = null!;
+
+        public int? InsuranceCompanyId { get; set; }
+        public int? VehicleServiceId { get; set; }
     }
 }

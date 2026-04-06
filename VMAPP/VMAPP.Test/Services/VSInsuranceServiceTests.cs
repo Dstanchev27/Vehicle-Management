@@ -372,5 +372,221 @@ namespace VMAPP.Test.Services
             Assert.That(result.VehicleVIN, Is.EqualTo("11111111111111111"));
             Assert.That(result.InsuranceCompanyName, Is.EqualTo("Allianz"));
         }
+
+        [Test]
+        public async Task CreateAsync_WhenNoCreatedByIdButUserExists_UsesFirstUser()
+        {
+            var user = new ApplicationUser
+            {
+                Id = TestUserId,
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            var dto = new InsuranceCompanyDto
+            {
+                Name = "Allianz",
+                Description = "Insurance",
+                City = "Sofia",
+                Address = "Str 1",
+                Email = "a@a.com",
+                Phone = "0888000000"
+            };
+
+            var id = await service.CreateAsync(dto);
+
+            Assert.That(id, Is.GreaterThan(0));
+            var created = await dbContext.InsuranceCompanies.FindAsync(id);
+            Assert.That(created!.CreatedById, Is.EqualTo(TestUserId));
+        }
+
+        [Test]
+        public async Task UpdateAsync_WhenModifiedByIdIsProvided_SetsModifiedById()
+        {
+            var company = new InsuranceCompany { Name = "Allianz", Description = "Desc", City = "Sofia", Address = "Str 1", Email = "a@a.com", Phone = "0888000000", CreatedOn = DateTime.UtcNow, CreatedById = TestUserId };
+            dbContext.InsuranceCompanies.Add(company);
+            await dbContext.SaveChangesAsync();
+
+            var dto = new InsuranceCompanyDto
+            {
+                Id = company.Id,
+                Name = "Allianz Updated",
+                Description = "Desc",
+                City = "Sofia",
+                Address = "Str 1",
+                Email = "a@a.com",
+                Phone = "0888000000",
+                ModifiedById = "modifier-user-id"
+            };
+
+            var result = await service.UpdateAsync(dto);
+
+            Assert.That(result, Is.True);
+            var updated = await dbContext.InsuranceCompanies.FindAsync(company.Id);
+            Assert.That(updated!.ModifiedById, Is.EqualTo("modifier-user-id"));
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenUserNotFound_ReturnsFalse()
+        {
+            var result = await service.AssignUserAsync("nonexistent-user-id", null);
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenCompanyNotFound_ReturnsFalse()
+        {
+            var user = new ApplicationUser
+            {
+                Id = TestUserId,
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.AssignUserAsync(TestUserId, 999);
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenUserAndCompanyExist_SetsCompanyIdAndReturnsTrue()
+        {
+            var user = new ApplicationUser
+            {
+                Id = TestUserId,
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            var company = new InsuranceCompany { Name = "Allianz", Description = "Desc", City = "Sofia", Address = "Str 1", Email = "a@a.com", Phone = "0888000000", CreatedOn = DateTime.UtcNow, CreatedById = TestUserId };
+            dbContext.Users.Add(user);
+            dbContext.InsuranceCompanies.Add(company);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.AssignUserAsync(TestUserId, company.Id);
+
+            Assert.That(result, Is.True);
+            var updatedUser = await dbContext.Users.FindAsync(TestUserId);
+            Assert.That(updatedUser!.InsuranceCompanyId, Is.EqualTo(company.Id));
+        }
+
+        [Test]
+        public async Task AssignUserAsync_WhenCompanyIdIsNull_ClearsAssignmentAndReturnsTrue()
+        {
+            var user = new ApplicationUser
+            {
+                Id = TestUserId,
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.AssignUserAsync(TestUserId, null);
+
+            Assert.That(result, Is.True);
+            var updatedUser = await dbContext.Users.FindAsync(TestUserId);
+            Assert.That(updatedUser!.InsuranceCompanyId, Is.Null);
+        }
+
+        [Test]
+        public async Task GetCompanyIdByPolicyIdAsync_WhenPolicyNotFound_ReturnsNull()
+        {
+            var result = await service.GetCompanyIdByPolicyIdAsync(999);
+
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public async Task GetCompanyIdByPolicyIdAsync_WhenPolicyFound_ReturnsCompanyId()
+        {
+            var vehicle = new Vehicle { VIN = "11111111111111111", CarBrand = "Toyota", CarModel = "Camry", CreatedOnYear = 2020, Color = "Red", VehicleType = VehicleType.Sedan, CreatedOn = DateTime.UtcNow };
+            var company = new InsuranceCompany { Name = "Allianz", Description = "Desc", City = "Sofia", Address = "Str 1", Email = "a@a.com", Phone = "0888000000", CreatedOn = DateTime.UtcNow, CreatedById = TestUserId };
+            dbContext.Vehicles.Add(vehicle);
+            dbContext.InsuranceCompanies.Add(company);
+            await dbContext.SaveChangesAsync();
+
+            var policy = new InsurancePolicy { VehicleId = vehicle.VehicleId, InsuranceCompanyId = company.Id, PolicyNumber = "POL-001", StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddYears(1), CreatedOn = DateTime.UtcNow, CreatedById = TestUserId };
+            dbContext.InsurancePolicies.Add(policy);
+            await dbContext.SaveChangesAsync();
+
+            var result = await service.GetCompanyIdByPolicyIdAsync(policy.Id);
+
+            Assert.That(result, Is.EqualTo(company.Id));
+        }
+
+        [Test]
+        public async Task CreateAsync_WhenCreatedOnIsProvided_PersistsProvidedDate()
+        {
+            var explicitDate = new DateTime(2023, 6, 15, 10, 0, 0, DateTimeKind.Utc);
+            var dto = new InsuranceCompanyDto
+            {
+                Name = "Allianz",
+                Description = "Insurance",
+                City = "Sofia",
+                Address = "Str 1",
+                Email = "a@a.com",
+                Phone = "0888000000",
+                CreatedById = TestUserId,
+                CreatedOn = explicitDate
+            };
+
+            var id = await service.CreateAsync(dto);
+
+            var created = await dbContext.InsuranceCompanies.FindAsync(id);
+            Assert.That(created!.CreatedOn, Is.EqualTo(explicitDate));
+        }
+
+        [Test]
+        public async Task AddPolicyAsync_WhenNoCreatedByIdButUserExists_UsesFirstUser()
+        {
+            var user = new ApplicationUser
+            {
+                Id = TestUserId,
+                UserName = "testuser@test.com",
+                Email = "testuser@test.com",
+                City = "Sofia",
+                Address = "Test Street 1",
+                CreatedOn = DateTime.UtcNow
+            };
+            var vehicle = new Vehicle { VIN = "11111111111111111", CarBrand = "Toyota", CarModel = "Camry", CreatedOnYear = 2020, Color = "Red", VehicleType = VehicleType.Sedan, CreatedOn = DateTime.UtcNow };
+            var company = new InsuranceCompany { Name = "Allianz", Description = "Desc", City = "Sofia", Address = "Str 1", Email = "a@a.com", Phone = "0888000000", CreatedOn = DateTime.UtcNow, CreatedById = TestUserId };
+            dbContext.Users.Add(user);
+            dbContext.Vehicles.Add(vehicle);
+            dbContext.InsuranceCompanies.Add(company);
+            await dbContext.SaveChangesAsync();
+
+            var dto = new InsurancePolicyFormDto
+            {
+                VehicleId = vehicle.VehicleId,
+                InsuranceCompanyId = company.Id,
+                PolicyNumber = "POL-002",
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddYears(1)
+                // CreatedById intentionally omitted
+            };
+
+            var id = await service.AddPolicyAsync(dto);
+
+            Assert.That(id, Is.GreaterThan(0));
+            var created = await dbContext.InsurancePolicies.FindAsync(id);
+            Assert.That(created!.CreatedById, Is.EqualTo(TestUserId));
+        }
     }
 }
