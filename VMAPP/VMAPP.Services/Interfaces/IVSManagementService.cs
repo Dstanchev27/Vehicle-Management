@@ -14,7 +14,7 @@ namespace VMAPP.Services.Interfaces
         Task<IReadOnlyList<VehicleDto>> GetVehiclesByServiceIdAsync(int serviceId);
         Task<ServiceWithVehiclesDto?> GetVehiclesServiceDetailsByIdAsync(int id);
         Task<VehicleDto?> GetVehicleByVinAsync(string vin);
-        Task<bool> AddVehicleToServiceAsync(int serviceId, int vehicleId);
+        Task<bool> AddVehicleToServiceAsync(int serviceId, int vehicleId, string createdById = "");
         Task<(bool Success, string? Message)> RemoveVehicleFromServiceAsync(int serviceId, int vehicleId);
     }
 }

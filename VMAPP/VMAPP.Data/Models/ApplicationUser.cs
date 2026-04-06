@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
 using VMAPP.Data.Models.Base;
-using VMAPP.Data.Models.Enums;
 
 namespace VMAPP.Data.Models
 {
@@ -24,10 +23,6 @@ namespace VMAPP.Data.Models
             this.Logins = new HashSet<IdentityUserLogin<string>>();
         }
 
-        public UserType UserType { get; set; }
-
-        [Required]
-        [StringLength(GlobalConstant.CityMaxLength, MinimumLength = GlobalConstant.CityMinLength)]
         public string City { get; set; } = null!;
 
         [Required]

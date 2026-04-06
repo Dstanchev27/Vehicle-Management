@@ -17,14 +17,17 @@ namespace VMAPP.Data.Seeding
 
             var roleNames = new[]
             {
-                nameof(UserType.InsuranceCompany),
-                nameof(UserType.VehicleService),
-                nameof(UserType.ProgramAdministrator),
+                nameof(AppRole.InsuranceCompany),
+                nameof(AppRole.VehicleService),
+                nameof(AppRole.ProgramAdministrator),
             };
 
             foreach (var roleName in roleNames)
             {
-                await dbContext.Roles.AddAsync(new ApplicationRole(roleName));
+                await dbContext.Roles.AddAsync(new ApplicationRole(roleName)
+                {
+                    NormalizedName = roleName.ToUpper()
+                });
             }
 
             await dbContext.SaveChangesAsync();

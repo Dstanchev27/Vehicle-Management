@@ -8,5 +8,6 @@ namespace VMAPP.Services.DTOs.VehicleServiceDTOs
         public DateTime ServiceDate { get; set; }
         public int VehicleId { get; set; }
         public int VehicleServiceId { get; set; }
+        public string? CreatedById { get; set; }
     }
 }

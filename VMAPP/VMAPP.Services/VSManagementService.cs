@@ -216,7 +216,7 @@ namespace VMAPP.Services
             };
         }
 
-        public async Task<bool> AddVehicleToServiceAsync(int serviceId, int vehicleId)
+        public async Task<bool> AddVehicleToServiceAsync(int serviceId, int vehicleId, string createdById = "")
         {
             var alreadyAssigned = await this.dbContext.ServiceRecords
                 .AnyAsync(sr => sr.VehicleServiceId == serviceId && sr.VehicleId == vehicleId);
@@ -232,7 +232,8 @@ namespace VMAPP.Services
                 VehicleId = vehicleId,
                 Cost = 0,
                 Description = $"Vehicle accepted into service on {DateTime.UtcNow:dd MMMM yyyy}.",
-                ServiceDate = DateTime.UtcNow
+                ServiceDate = DateTime.UtcNow,
+                CreatedById = createdById
             };
 
             await this.dbContext.ServiceRecords.AddAsync(record);

@@ -19,7 +19,14 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="Password"></label>
-                    <input asp-for="Password" class="form-control" type="password" />
+                    <div class="input-group">
+                        <input asp-for="Password" class="form-control" type="password" />
+                        <button class="btn btn-outline-secondary" type="button"
+                                data-toggle-password="Password" tabindex="-1"
+                                title="Show/hide password">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                    </div>
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
             </div>
@@ -38,13 +45,6 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="UserType"></label>
-                    <select asp-for="UserType"
-                            class="form-select"
-                            asp-items="@(ViewBag.UserTypes as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)">
-                    </select>
-                </div>
                 <div class="col-md-6 mb-3">
                     <label asp-for="SelectedRole"></label>
                     <select asp-for="SelectedRole"

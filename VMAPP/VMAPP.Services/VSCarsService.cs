@@ -195,7 +195,8 @@ namespace VMAPP.Services
                 Description = dto.Description,
                 ServiceDate = dto.ServiceDate,
                 VehicleId = dto.VehicleId,
-                VehicleServiceId = dto.VehicleServiceId
+                VehicleServiceId = dto.VehicleServiceId,
+                CreatedById = dto.CreatedById ?? string.Empty
             };
 
             await dbContext.ServiceRecords.AddAsync(record);

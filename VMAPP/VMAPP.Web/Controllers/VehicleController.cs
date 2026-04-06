@@ -12,10 +12,12 @@ namespace VMAPP.Web.Controllers
     public class VehicleController : Controller
     {
         private readonly IVSService vehicleService;
+        private readonly ILogger<VehicleController> logger;
 
-        public VehicleController(IVSService vehicleService)
+        public VehicleController(IVSService vehicleService, ILogger<VehicleController> logger)
         {
             this.vehicleService = vehicleService;
+            this.logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -64,6 +66,7 @@ namespace VMAPP.Web.Controllers
             };
 
             await this.vehicleService.CreateAsync(dto);
+            logger.LogInformation("Vehicle with VIN {VIN} was successfully created.", dto.VIN);
             return RedirectToAction(nameof(Index));
         }
 
@@ -111,6 +114,7 @@ namespace VMAPP.Web.Controllers
             };
 
             await this.vehicleService.UpdateAsync(dto);
+            logger.LogInformation("Vehicle with VIN {VIN} was successfully updated.", dto.VIN);
             return RedirectToAction(nameof(Index));
         }
 
@@ -118,6 +122,7 @@ namespace VMAPP.Web.Controllers
         public async Task<IActionResult> DeleteVehicle(int id)
         {
             await this.vehicleService.DeleteAsync(id);
+            logger.LogInformation("Vehicle with id {Id} was successfully deleted.", id);
             return RedirectToAction(nameof(Index));
         }
     }

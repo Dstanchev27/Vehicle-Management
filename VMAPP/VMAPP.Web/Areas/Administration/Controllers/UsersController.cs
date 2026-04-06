@@ -8,7 +8,6 @@
 
     using VMAPP.Common;
     using VMAPP.Data.Models;
-    using VMAPP.Data.Models.Enums;
     using VMAPP.Web.Areas.Administration.Models;
 
     [Area("Administration")]
@@ -17,13 +16,16 @@
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly ILogger<UsersController> _logger;
 
         public UsersController(
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager)
+            RoleManager<ApplicationRole> roleManager,
+            ILogger<UsersController> logger)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -43,7 +45,6 @@
                     Email = u.Email,
                     City = u.City,
                     Address = u.Address,
-                    UserType = u.UserType,
                     Roles = roles.ToList()
                 });
             }
@@ -66,7 +67,6 @@
                 Email = u.Email,
                 City = u.City,
                 Address = u.Address,
-                UserType = u.UserType,
                 Roles = roles
             };
 
@@ -74,9 +74,9 @@
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            await PopulateSelectLists();
+            PopulateSelectLists();
             return View();
         }
 
@@ -85,7 +85,7 @@
         {
             if (!ModelState.IsValid)
             {
-                await PopulateSelectLists();
+                PopulateSelectLists();
                 return View(model);
             }
 
@@ -95,7 +95,8 @@
                 Email = model.Email,
                 City = model.City,
                 Address = model.Address,
-                UserType = model.UserType
+                EmailConfirmed = true,
+                TwoFactorEnabled = false
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -103,11 +104,21 @@
             {
                 foreach (var e in result.Errors)
                     ModelState.AddModelError("", e.Description);
-                await PopulateSelectLists();
+                PopulateSelectLists();
                 return View(model);
             }
 
-            await _userManager.AddToRoleAsync(user, model.SelectedRole);
+            var roleResult = await _userManager.AddToRoleAsync(user, model.SelectedRole);
+            if (!roleResult.Succeeded)
+            {
+                foreach (var e in roleResult.Errors)
+                    ModelState.AddModelError("", e.Description);
+                await _userManager.DeleteAsync(user);
+                PopulateSelectLists();
+                return View(model);
+            }
+
+            _logger.LogInformation("User '{Email}' was successfully created with role '{Role}'.", user.Email, model.SelectedRole);
             return RedirectToAction(nameof(Index));
         }
 
@@ -126,11 +137,10 @@
                 Email = u.Email,
                 City = u.City,
                 Address = u.Address,
-                UserType = u.UserType,
                 SelectedRole = roles.FirstOrDefault() ?? ""
             };
 
-            await PopulateSelectLists();
+            PopulateSelectLists();
             return View(vm);
         }
 
@@ -139,7 +149,7 @@
         {
             if (!ModelState.IsValid)
             {
-                await PopulateSelectLists();
+                PopulateSelectLists();
                 return View(model);
             }
 
@@ -150,7 +160,6 @@
             u.UserName = model.Email;
             u.City = model.City;
             u.Address = model.Address;
-            u.UserType = model.UserType;
 
             var currentRoles = await _userManager.GetRolesAsync(u);
             if (currentRoles.Any())
@@ -159,6 +168,7 @@
             await _userManager.AddToRoleAsync(u, model.SelectedRole);
             await _userManager.UpdateAsync(u);
 
+            _logger.LogInformation("User '{Email}' was successfully updated with role '{Role}'.", u.Email, model.SelectedRole);
             return RedirectToAction(nameof(Index));
         }
 
@@ -177,7 +187,6 @@
                 Email = u.Email,
                 City = u.City,
                 Address = u.Address,
-                UserType = u.UserType,
                 Roles = roles
             };
 
@@ -193,20 +202,18 @@
                 u.IsDeleted = true;
                 u.DeletedOn = DateTime.UtcNow;
                 await _userManager.UpdateAsync(u);
+                _logger.LogInformation("User '{Email}' was successfully deleted.", u.Email);
             }
 
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task PopulateSelectLists()
+        private void PopulateSelectLists()
         {
-            ViewBag.Roles = (await _roleManager.Roles
-                    .Select(r => r.Name)
-                    .ToListAsync())
+            ViewBag.Roles = _roleManager.Roles
+                .Select(r => r.Name)
+                .ToList()
                 .Select(r => new SelectListItem(r, r));
-
-            ViewBag.UserTypes = Enum.GetValues<UserType>()
-                .Select(ut => new SelectListItem(ut.ToString(), ut.ToString()));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using VMAPP.Common;
 using VMAPP.Services.DTOs;
 using VMAPP.Services.DTOs.VehicleServiceDTOs;
@@ -15,11 +16,13 @@ namespace VMAPP.Web.Controllers
     {
         private readonly IVSManagementService vsManagementService;
         private readonly IVSCarsService vsCarsService;
+        private readonly ILogger<VehicleServicesController> logger;
 
-        public VehicleServicesController(IVSManagementService vsManagementService, IVSCarsService vsCarsService)
+        public VehicleServicesController(IVSManagementService vsManagementService, IVSCarsService vsCarsService, ILogger<VehicleServicesController> logger)
         {
             this.vsManagementService = vsManagementService;
             this.vsCarsService = vsCarsService;
+            this.logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -44,38 +47,35 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public IActionResult AddService()
         {
             return View(new AddServiceViewModel());
         }
 
         [HttpPost]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> AddService(AddServiceViewModel newService)
         {
             if (!ModelState.IsValid)
             {
                 return View(newService);
             }
-            try
-            {
-                var dto = new VehicleServiceDto
-                {
-                    Name = newService.Name,
-                    City = newService.City,
-                    Address = newService.Address,
-                    Email = newService.Email,
-                    Phone = newService.Phone,
-                    Description = newService.Description,
-                    CreatedOn = DateTime.UtcNow
-                };
 
-                await vsManagementService.CreateAsync(dto);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception)
+            var dto = new VehicleServiceDto
             {
-                return RedirectToAction(nameof(Index));
-            }
+                Name = newService.Name,
+                City = newService.City,
+                Address = newService.Address,
+                Email = newService.Email,
+                Phone = newService.Phone,
+                Description = newService.Description,
+                CreatedOn = DateTime.UtcNow
+            };
+
+            await vsManagementService.CreateAsync(dto);
+            logger.LogInformation("Vehicle service '{Name}' was successfully created.", dto.Name);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
@@ -149,13 +149,15 @@ namespace VMAPP.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> AddVehicleToService([FromBody] AddVehicleToServiceRequest request)
         {
-            var success = await vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            var success = await vsManagementService.AddVehicleToServiceAsync(request.ServiceId, request.VehicleId, userId);
 
             if (!success)
             {
                 return Json(new { success = false, message = "This vehicle is already assigned to the service." });
             }
 
+            logger.LogInformation("Vehicle {VehicleId} was successfully added to service {ServiceId}.", request.VehicleId, request.ServiceId);
             return Json(new { success = true });
         }
 
@@ -170,6 +172,7 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message });
             }
 
+            logger.LogInformation("Vehicle {VehicleId} was successfully removed from service {ServiceId}.", request.VehicleId, request.ServiceId);
             return Json(new { success = true });
         }
 
@@ -219,6 +222,7 @@ namespace VMAPP.Web.Controllers
             };
 
             await vsManagementService.UpdateAsync(dto);
+            logger.LogInformation("Vehicle service '{Name}' was successfully updated.", dto.Name);
             return RedirectToAction(nameof(Index));
         }
 
@@ -226,6 +230,7 @@ namespace VMAPP.Web.Controllers
         public async Task<IActionResult> DeleteService(int id)
         {
             await vsManagementService.DeleteAsync(id);
+            logger.LogInformation("Vehicle service with id {Id} was successfully deleted.", id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -298,10 +303,12 @@ namespace VMAPP.Web.Controllers
                 Description = model.Description,
                 ServiceDate = model.ServiceDate,
                 VehicleId = model.VehicleId,
-                VehicleServiceId = model.VehicleServiceId
+                VehicleServiceId = model.VehicleServiceId,
+                CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier)
             };
 
             await vsCarsService.AddServiceRecordAsync(dto);
+            logger.LogInformation("Service record for vehicle {VehicleId} in service {ServiceId} was successfully created.", dto.VehicleId, dto.VehicleServiceId);
             return Json(new { success = true });
         }
 
@@ -330,6 +337,7 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message = "Record not found." });
             }
 
+            logger.LogInformation("Service record {Id} for vehicle {VehicleId} was successfully updated.", dto.Id, dto.VehicleId);
             return Json(new { success = true });
         }
 
@@ -342,6 +350,7 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message = "Record not found." });
             }
 
+            logger.LogInformation("Service record with id {Id} was successfully deleted.", request.Id);
             return Json(new { success = true });
         }
     }

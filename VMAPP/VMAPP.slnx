@@ -17,4 +17,8 @@
   <Folder Name="/VMAPP.Web/">
     <Project Path="VMAPP.Web/VMAPP.Web.csproj" />
   </Folder>
+  <Folder Name="/VMAPP.Test/">
+    <Project Path="VMAPP.Test/VMAPP.Test.csproj" />
+  </Folder>
 </Solution>
+

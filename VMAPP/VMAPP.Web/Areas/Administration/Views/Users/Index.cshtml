@@ -20,7 +20,6 @@
                     <th>Email</th>
                     <th>City</th>
                     <th>Address</th>
-                    <th>User Type</th>
                     <th>Roles</th>
                     <th class="text-center action-col">Details</th>
                     <th class="text-center action-col">Edit</th>
@@ -34,7 +33,6 @@
                         <td class="text-break">@user.Email</td>
                         <td>@user.City</td>
                         <td class="text-break">@user.Address</td>
-                        <td>@user.UserType</td>
                         <td>@string.Join(", ", user.Roles)</td>
                         <td class="text-center action-col">
                             <a asp-area="Administration"

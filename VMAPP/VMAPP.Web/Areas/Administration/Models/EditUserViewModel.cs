@@ -2,8 +2,6 @@ namespace VMAPP.Web.Areas.Administration.Models
 {
     using System.ComponentModel.DataAnnotations;
 
-    using VMAPP.Data.Models.Enums;
-
     public class EditUserViewModel
     {
         public string Id { get; set; } = null!;
@@ -17,8 +15,6 @@ namespace VMAPP.Web.Areas.Administration.Models
 
         [Required]
         public string Address { get; set; } = null!;
-
-        public UserType UserType { get; set; }
 
         [Required]
         public string SelectedRole { get; set; } = null!;

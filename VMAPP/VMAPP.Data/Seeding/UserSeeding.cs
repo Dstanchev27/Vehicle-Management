@@ -29,7 +29,6 @@ namespace VMAPP.Data.Seeding
                 NormalizedEmail = "ADMIN@VMAPP.COM",
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString("D"),
-                UserType = UserType.ProgramAdministrator,
                 City = "Sofia",
                 Address = "1 Admin Street",
                 CreatedOn = DateTime.UtcNow,
@@ -45,7 +44,6 @@ namespace VMAPP.Data.Seeding
                 NormalizedEmail = "INSURANCE@VMAPP.COM",
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString("D"),
-                UserType = UserType.InsuranceCompany,
                 City = "Plovdiv",
                 Address = "15 Insurance Avenue",
                 CreatedOn = DateTime.UtcNow,
@@ -61,7 +59,6 @@ namespace VMAPP.Data.Seeding
                 NormalizedEmail = "SERVICE@VMAPP.COM",
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString("D"),
-                UserType = UserType.VehicleService,
                 City = "Varna",
                 Address = "7 Mechanic Road",
                 CreatedOn = DateTime.UtcNow,
@@ -77,9 +74,9 @@ namespace VMAPP.Data.Seeding
 
             var roleMap = new[]
             {
-                (UserId: admin.Id, RoleName: nameof(UserType.ProgramAdministrator)),
-                (UserId: insuranceUser.Id, RoleName: nameof(UserType.InsuranceCompany)),
-                (UserId: serviceUser.Id, RoleName: nameof(UserType.VehicleService)),
+                (UserId: admin.Id, RoleName: nameof(AppRole.ProgramAdministrator)),
+                (UserId: insuranceUser.Id, RoleName: nameof(AppRole.InsuranceCompany)),
+                (UserId: serviceUser.Id, RoleName: nameof(AppRole.VehicleService)),
             };
 
             foreach (var (userId, roleName) in roleMap)

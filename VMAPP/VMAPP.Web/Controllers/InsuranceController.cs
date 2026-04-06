@@ -13,10 +13,12 @@ namespace VMAPP.Web.Controllers
     public class InsuranceController : Controller
     {
         private readonly IVSInsuranceService insuranceService;
+        private readonly ILogger<InsuranceController> logger;
 
-        public InsuranceController(IVSInsuranceService insuranceService)
+        public InsuranceController(IVSInsuranceService insuranceService, ILogger<InsuranceController> logger)
         {
             this.insuranceService = insuranceService;
+            this.logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -41,12 +43,14 @@ namespace VMAPP.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public IActionResult AddInsuranceCompany()
         {
             return View(new AddInsuranceCompanyViewModel());
         }
 
         [HttpPost]
+        [Authorize(Roles = GlobalConstant.AdministratorRoleName)]
         public async Task<IActionResult> AddInsuranceCompany(AddInsuranceCompanyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -54,27 +58,21 @@ namespace VMAPP.Web.Controllers
                 return View(model);
             }
 
-            try
+            var dto = new InsuranceCompanyDto
             {
-                var dto = new InsuranceCompanyDto
-                {
-                    Name = model.Name,
-                    City = model.City,
-                    Address = model.Address,
-                    Email = model.Email,
-                    Phone = model.Phone,
-                    Description = model.Description,
-                    CreatedOn = DateTime.UtcNow,
-                    CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                };
+                Name = model.Name,
+                City = model.City,
+                Address = model.Address,
+                Email = model.Email,
+                Phone = model.Phone,
+                Description = model.Description,
+                CreatedOn = DateTime.UtcNow,
+                CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            };
 
-                await insuranceService.CreateAsync(dto);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception)
-            {
-                return RedirectToAction(nameof(Index));
-            }
+            await insuranceService.CreateAsync(dto);
+            logger.LogInformation("Insurance company '{Name}' was successfully created.", dto.Name);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
@@ -199,6 +197,7 @@ namespace VMAPP.Web.Controllers
             };
 
             await insuranceService.UpdateAsync(dto);
+            logger.LogInformation("Insurance company '{Name}' was successfully updated.", dto.Name);
             return RedirectToAction(nameof(Index));
         }
 
@@ -206,6 +205,7 @@ namespace VMAPP.Web.Controllers
         public async Task<IActionResult> DeleteInsuranceCompany(int id)
         {
             await insuranceService.DeleteAsync(id);
+            logger.LogInformation("Insurance company with id {Id} was successfully deleted.", id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -259,6 +259,7 @@ namespace VMAPP.Web.Controllers
             };
 
             await insuranceService.AddPolicyAsync(dto);
+            logger.LogInformation("Insurance policy '{PolicyNumber}' for vehicle {VehicleId} was successfully created.", dto.PolicyNumber, dto.VehicleId);
             return Json(new { success = true });
         }
 
@@ -271,6 +272,7 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message = "Policy not found." });
             }
 
+            logger.LogInformation("Insurance policy with id {Id} was successfully deleted.", request.Id);
             return Json(new { success = true });
         }
 
@@ -309,6 +311,7 @@ namespace VMAPP.Web.Controllers
             };
 
             await insuranceService.AddClaimAsync(dto);
+            logger.LogInformation("Insurance claim for policy {PolicyId} was successfully created.", dto.InsurancePolicyId);
             return Json(new { success = true });
         }
 
@@ -321,6 +324,7 @@ namespace VMAPP.Web.Controllers
                 return Json(new { success = false, message = "Claim not found." });
             }
 
+            logger.LogInformation("Insurance claim with id {Id} was successfully deleted.", request.Id);
             return Json(new { success = true });
         }
     }
