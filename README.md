@@ -16,25 +16,29 @@ It includes role-based access control, ASP.NET Core Identity integration, transa
 
 ### Service Station Management
 
-- Create, edit, and delete vehicle service stations
+- Create, edit, and delete vehicle service stations — `ProgramAdministrator` only
 - Store contact info: name, city, address, email, phone, description
-- Assign vehicles to service stations and remove them
-- Role-restricted: accessible to `ProgramAdministrator` and `VehicleService` users
+- Assign vehicles to service stations and remove them — `ProgramAdministrator` only
+- `VehicleService` users are automatically redirected to their own station's detail page
+- `VehicleService` users can view their station details and navigate to individual vehicles
 
 ### Service Records
 
-- Add, edit, and delete per-vehicle service records
+- Add per-vehicle service records — `ProgramAdministrator` and `VehicleService` users
+- Edit and delete per-vehicle service records — `ProgramAdministrator` only
 - Track service date, cost, and description per service station
 - Modal-based UI with DataTables for a responsive service history table
 
 ### Insurance Management
 
-- Create, edit, and delete insurance companies
-- Assign vehicles to insurance companies via insurance policies
+- Create, edit, and delete insurance companies — `ProgramAdministrator` only
+- Assign vehicles to insurance companies via insurance policies — `ProgramAdministrator` only
+- Delete insurance policies and their associated claims — `ProgramAdministrator` only
 - Track policy number, start date, and end date per policy
-- Add and delete insurance claims linked to a policy (claim date, description, amount)
-- Role-restricted: accessible to `ProgramAdministrator` and `InsuranceCompany` users
-- An `InsuranceCompany` user is automatically redirected to their own company's detail page
+- Add insurance claims linked to a policy (claim date, description, amount) — `ProgramAdministrator` and `InsuranceCompany` users
+- Delete insurance claims — `ProgramAdministrator` only
+- `InsuranceCompany` users are automatically redirected to their own company's detail page
+- `InsuranceCompany` users can view their company details, policies, and claims, and add new claims
 
 ### User Management & Administration
 
@@ -50,6 +54,47 @@ It includes role-based access control, ASP.NET Core Identity integration, transa
 - Two-factor authentication (2FA) support; admins are required to have 2FA enabled (`EnforceAdmin2FAMiddleware`)
 - Three application roles: `ProgramAdministrator`, `VehicleService`, `InsuranceCompany`
 - Cookie-based authentication with consistent security policy
+
+### Role-Based Access Control
+
+Permissions are enforced at both the controller action level (`[Authorize(Roles = ...)]`) and in the views (UI elements hidden for unauthorised roles).
+
+#### `ProgramAdministrator`
+
+Full access to everything in the application.
+
+| Area | Allowed Actions |
+|---|---|
+| Service Stations | Create, edit, delete, view details, assign/remove vehicles |
+| Service Records | Add, edit, delete |
+| Insurance Companies | Create, edit, delete, view details |
+| Insurance Policies | Add, delete |
+| Insurance Claims | Add, delete |
+| Vehicles | Full CRUD |
+| User Administration | Full CRUD, role assignment, service/company assignment |
+
+#### `VehicleService`
+
+Read-only access to service station data plus the ability to add service records.
+
+| Area | Allowed Actions |
+|---|---|
+| Service Stations | View own station's detail page only (auto-redirected on login) |
+| Service Records | Add new records only — edit and delete are restricted to `ProgramAdministrator` |
+| Vehicle assignment / removal | Not permitted |
+| Insurance, Vehicles, Administration | Not accessible |
+
+#### `InsuranceCompany`
+
+Read-only access to insurance data plus the ability to add claims.
+
+| Area | Allowed Actions |
+|---|---|
+| Insurance Companies | View own company's detail page only (auto-redirected on login) |
+| Insurance Policies | View policy details only |
+| Insurance Claims | Add new claims only — delete is restricted to `ProgramAdministrator` |
+| Policy creation / deletion | Not permitted |
+| Service Stations, Vehicles, Administration | Not accessible |
 
 ### UI / UX
 
@@ -325,7 +370,8 @@ handling (e.g., costs like `10.05`).
 - **`VehicleServicesController`**
   - Requires `ProgramAdministrator` or `VehicleService` role
   - Injects `IVSManagementService` + `IVSCarsService`
-  - Handles service station listing, create/edit/delete, vehicle assignment/removal, and service record management
+  - `ProgramAdministrator`: full access — create/edit/delete stations, assign/remove vehicles, add/edit/delete service records
+  - `VehicleService`: restricted access — view own station and its vehicles, add service records only
   - Key DTO -> ViewModel mappings:
     - `VehicleServiceDto` <-> `VehicleServiceViewModel`, `AddServiceViewModel`, `EditViewModel`, `DeleteViewModel`
     - `ServiceWithVehiclesDto` -> `VehicleServiceDetailsViewModel`
@@ -342,7 +388,8 @@ handling (e.g., costs like `10.05`).
 - **`InsuranceController`**
   - Requires `ProgramAdministrator` or `InsuranceCompany` role
   - Injects `IVSInsuranceService` + `UserManager<ApplicationUser>`
-  - Handles insurance company listing, create/edit/delete, policy and claim management
+  - `ProgramAdministrator`: full access — create/edit/delete companies, add/delete policies, add/delete claims
+  - `InsuranceCompany`: restricted access — view own company details and policies, add claims only
   - `InsuranceCompany` role users are automatically scoped to their own company
   - Key DTO -> ViewModel mappings:
     - `InsuranceCompanyDto` <-> `InsuranceCompanyViewModel`, `AddInsuranceCompanyViewModel`, `EditInsuranceCompanyViewModel`
@@ -421,8 +468,8 @@ Each page renders a large coloured status-code number, a short title, a plain-la
 | `AddService.cshtml` | `GET/POST /VehicleServices/AddService` | `AddServiceViewModel` | Form to create a new service station. Fields: Name, City, Address, Phone, Email, Description. Includes server-side and client-side validation. |
 | `EditService.cshtml` | `GET/POST /VehicleServices/EditService/{id}` | `EditViewModel` | Form to update an existing service station, pre-populated from the database. |
 | `DeleteService.cshtml` | `GET/POST /VehicleServices/DeleteService/{id}` | `DeleteViewModel` | Delete confirmation form displaying all fields as read-only. |
-| `Details.cshtml` | `GET /VehicleServices/Details/{id}` | `VehicleServiceDetailsViewModel` | Service station detail page with assigned vehicles table. Bootstrap modals for adding (VIN search via AJAX) and removing vehicles. |
-| `ServiceVehicle.cshtml` | `GET /VehicleServices/ServiceVehicle?vehicleId=&serviceId=` | `ServiceVehicleViewModel` | Per-vehicle service record management page. All record operations (add, view, edit, delete) are AJAX-driven through Bootstrap modals. JS logic lives in `serviceVehicle.js`. |
+| `Details.cshtml` | `GET /VehicleServices/Details/{id}` | `VehicleServiceDetailsViewModel` | Service station detail page with assigned vehicles table. **Add Vehicle** button and **Remove** column visible to `ProgramAdministrator` only. |
+| `ServiceVehicle.cshtml` | `GET /VehicleServices/ServiceVehicle?vehicleId=&serviceId=` | `ServiceVehicleViewModel` | Per-vehicle service record management page. **Add Service Record** available to all authorised roles. **Edit** and **Delete** record buttons visible to `ProgramAdministrator` only. JS logic lives in `serviceVehicle.js`. |
 
 ##### Vehicle/
 
@@ -439,8 +486,8 @@ Each page renders a large coloured status-code number, a short title, a plain-la
 | `Index.cshtml` | `GET /Insurance/Index` | `IEnumerable<InsuranceCompanyViewModel>` | Lists all insurance companies. `ProgramAdministrator` sees all; `InsuranceCompany` users are redirected to their own details page. |
 | `AddInsuranceCompany.cshtml` | `GET/POST /Insurance/AddInsuranceCompany` | `AddInsuranceCompanyViewModel` | Form to create a new insurance company. Restricted to `ProgramAdministrator`. |
 | `EditInsuranceCompany.cshtml` | `GET/POST /Insurance/EditInsuranceCompany/{id}` | `EditInsuranceCompanyViewModel` | Form to update an existing insurance company. |
-| `Details.cshtml` | `GET /Insurance/Details/{id}` | `InsuranceCompanyDetailsViewModel` | Company detail page with a table of associated vehicles and policies. Bootstrap modals for adding vehicles (VIN search via AJAX) and managing claims. |
-| `PolicyDetails.cshtml` | `GET /Insurance/PolicyDetails/{id}` | `InsurancePolicyDetailsViewModel` | Full policy view with vehicle and company info plus a table of claims. |
+| `Details.cshtml` | `GET /Insurance/Details/{id}` | `InsuranceCompanyDetailsViewModel` | Company detail page with a table of associated vehicles and policies. **Add Policy** button and **Delete** policy column visible to `ProgramAdministrator` only. |
+| `PolicyDetails.cshtml` | `GET /Insurance/PolicyDetails/{id}` | `InsurancePolicyDetailsViewModel` | Full policy view with vehicle and company info plus a table of claims. **Add Claim** available to all authorised roles. **Delete** claim column visible to `ProgramAdministrator` only. |
 
 ##### Areas/Administration/
 
