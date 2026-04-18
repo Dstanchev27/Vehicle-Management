@@ -21,7 +21,7 @@
             {
                 TableName = "Logs",
                 SchemaName = "dbo",
-                AutoCreateSqlTable = true
+                AutoCreateSqlTable = false
             };
 
             var columnOptions = new ColumnOptions();

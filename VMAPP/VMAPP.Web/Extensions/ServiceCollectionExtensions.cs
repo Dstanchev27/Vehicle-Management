@@ -9,7 +9,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using VMAPP.Data;
 using VMAPP.Data.Models;
-
+using VMAPP.Data.Seeding;
 using VMAPP.Services;
 using VMAPP.Services.Interfaces;
 
@@ -112,6 +112,22 @@ namespace VMAPP.Web.Extensions
                 });
 
             return services;
+        }
+
+        public static async Task InitializeDatabaseAsync(this WebApplication app)
+        {
+            using var scope = app.Services.CreateScope();
+
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
+
+            logger.LogInformation("Applying database migrations...");
+            await db.Database.MigrateAsync();
+
+            logger.LogInformation("Database migrations applied. Seeding data...");
+            await new ApplicationDbContextSeeder().SeedAsync(db);
+
+            logger.LogInformation("Database seeding completed.");
         }
     }
 }

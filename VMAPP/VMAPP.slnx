@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/SolutionFiles/">
+    <File Path="../.gitignore" />
     <File Path="../README.md" />
   </Folder>
   <Folder Name="/VMAPP.Common/">

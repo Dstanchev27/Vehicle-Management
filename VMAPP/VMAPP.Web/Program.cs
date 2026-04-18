@@ -1,4 +1,5 @@
 using Serilog;
+using Serilog.Events;
 
 using VMAPP.Web.Extensions;
 using VMAPP.Web.Extensions.Middleware;
@@ -9,6 +10,12 @@ namespace VMAPP.Web
     {
         public static async Task Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+                .MinimumLevel.Override("System", LogEventLevel.Error)
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
+
             try
             {
                 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +35,8 @@ namespace VMAPP.Web
                     .AddRazorPages();
 
                 var app = builder.Build();
+
+                await app.InitializeDatabaseAsync();
 
                 app
                     .UseRequestLocalization()
@@ -52,12 +61,11 @@ namespace VMAPP.Web
             catch (Exception ex)
             {
                 Log.Fatal(ex, "There was a problem starting the service!");
-                return;
             }
             finally
             {
                 Log.Fatal("The process was killed!");
-                Log.CloseAndFlush();
+                await Log.CloseAndFlushAsync();
             }
         }
     }

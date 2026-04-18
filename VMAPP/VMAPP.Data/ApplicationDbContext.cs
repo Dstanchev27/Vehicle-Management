@@ -118,5 +118,6 @@ namespace VMAPP.Data
         public DbSet<InsuranceCompany> InsuranceCompanies { get; set; } = null!;
         public DbSet<InsurancePolicy> InsurancePolicies { get; set; } = null!;
         public DbSet<InsuranceClaim> InsuranceClaims { get; set; } = null!;
+        public DbSet<Log> Logs { get; set; } = null!;
     }
 }
