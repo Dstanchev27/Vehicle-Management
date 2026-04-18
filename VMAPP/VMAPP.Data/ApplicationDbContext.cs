@@ -107,6 +107,50 @@ namespace VMAPP.Data
                     .HasForeignKey(u => u.VehicleServiceId)
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(u => u.AnnualReviewCompany)
+                    .WithMany(arc => arc.Users)
+                    .HasForeignKey(u => u.AnnualReviewCompanyId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<AnnualReviewCompany>(entity =>
+            {
+                entity.HasOne(arc => arc.CreatedBy)
+                    .WithMany(u => u.CreatedAnnualReviewCompanies)
+                    .HasForeignKey(arc => arc.CreatedById)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(arc => arc.ModifiedBy)
+                    .WithMany()
+                    .HasForeignKey(arc => arc.ModifiedById)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<AnnualReport>(entity =>
+            {
+                entity.HasOne(ar => ar.Vehicle)
+                    .WithMany()
+                    .HasForeignKey(ar => ar.VehicleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ar => ar.AnnualReviewCompany)
+                    .WithMany(arc => arc.AnnualReports)
+                    .HasForeignKey(ar => ar.AnnualReviewCompanyId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(ar => ar.CreatedBy)
+                    .WithMany(u => u.CreatedAnnualReports)
+                    .HasForeignKey(ar => ar.CreatedById)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(ar => ar.ModifiedBy)
+                    .WithMany()
+                    .HasForeignKey(ar => ar.ModifiedById)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             base.OnModelCreating(modelBuilder);
@@ -118,6 +162,8 @@ namespace VMAPP.Data
         public DbSet<InsuranceCompany> InsuranceCompanies { get; set; } = null!;
         public DbSet<InsurancePolicy> InsurancePolicies { get; set; } = null!;
         public DbSet<InsuranceClaim> InsuranceClaims { get; set; } = null!;
+        public DbSet<AnnualReviewCompany> AnnualReviewCompanies { get; set; } = null!;
+        public DbSet<AnnualReport> AnnualReports { get; set; } = null!;
         public DbSet<Log> Logs { get; set; } = null!;
     }
 }

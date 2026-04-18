@@ -24,6 +24,8 @@ namespace VMAPP.Data.Seeding
                 new ServiceRecordSeeding(),
                 new InsurancePolicySeeding(),
                 new InsuranceClaimSeeding(),
+                new AnnualReviewCompanySeeding(),
+                new AnnualReportSeeding(),
             };
 
             foreach (var seeder in seeders)

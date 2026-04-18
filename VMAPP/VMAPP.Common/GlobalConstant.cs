@@ -30,5 +30,11 @@
         public const int InsuranceCompanyDescription = 1000;
         public const int InsurancePolicyNumber = 50;
         public const int InsuranceClaimDescription = 1500;
+
+        public const int AnnualReviewCompanyName = 150;
+        public const int AnnualReviewCompanyDescription = 1000;
+        public const string AnnualReviewCompanyRoleName = "AnnualReviewCompany";
+        public const int AnnualReportNumber = 50;
+        public const int AnnualReportNotes = 1500;
     }
 }
