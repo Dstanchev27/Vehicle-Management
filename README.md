@@ -1,8 +1,73 @@
 ﻿# Vehicle Management System (VMAPP)
 
 A web-based Vehicle Management System built with ASP.NET Core (.NET 8) and MVC / Razor Views.  
-The application manages vehicles, service history, insurance policies, and related service station and insurance company records.  
+The application manages vehicles, service history, insurance policies, annual vehicle reviews, and related company records.  
 It includes role-based access control, ASP.NET Core Identity integration, transactional email via SendGrid, structured logging with Serilog, and a dedicated NUnit test suite.
+
+---
+
+## ⚠️ Important Notes for Testers / Reviewers
+
+### 🚀 The Application Self-Initialises on First Run
+
+**You do not need to create or migrate the database manually.**  
+On startup, `Program.cs` calls `app.InitializeDatabaseAsync()`, which:
+
+1. Automatically runs all pending EF Core migrations (`MigrateAsync()`)
+2. Automatically seeds all sample data (roles, users, vehicles, stations, companies, policies, claims, reports)
+
+Simply set `VMAPP.Web` as the startup project and press **F5** — the database will be created and seeded on the first run, provided the SQL Server instance is reachable (see [Database Setup](#database-setup-testing-environment)).
+
+> If the database server is not reachable at startup, Serilog (which writes to the DB) will log a fatal error and the application will exit. Make sure the SQL Server instance is running **before** launching the app.
+
+---
+
+### 🔑 Pre-Seeded Test Accounts (No Email Confirmation Required)
+
+To avoid any dependency on email / SendGrid during testing, four ready-to-use accounts are seeded automatically by `TestUsersSeeding`. All have `EmailConfirmed = true` and can be used immediately:
+
+| Email | Password | Role | Scope |
+|---|---|---|---|
+| `testadmin@vmapp.com` | `TestAdmin123!` | `ProgramAdministrator` | Full access to everything |
+| `testinsurance@vmapp.com` | `TestInsurance123!` | `InsuranceCompany` | Scoped to first seeded insurance company |
+| `testservice@vmapp.com` | `TestService123!` | `VehicleService` | Scoped to first seeded service station |
+| `testannual@vmapp.com` | `TestAnnual123!` | `AnnualReviewCompany` | Scoped to first seeded annual review company |
+
+> **The three non-admin test accounts (`testinsurance`, `testservice`, `testannual`) do NOT require 2FA and can log in directly.**
+
+---
+
+### 🔐 Administrator 2FA Requirement
+
+The `ProgramAdministrator` role enforces two-factor authentication via `EnforceAdmin2FAMiddleware`.  
+**The test admin account (`testadmin@vmapp.com`) will be redirected to the 2FA setup page on first login.**
+
+To complete admin login you will need an authenticator app (e.g. Google Authenticator, Microsoft Authenticator) installed on your phone. This is by design — administrators are required to have 2FA enabled for security.
+
+**If you want to test admin features without 2FA**, you can:
+- Use `testinsurance@vmapp.com` — full insurance management
+- Use `testservice@vmapp.com` — service station and service records
+- Use `testannual@vmapp.com` — annual review management
+
+---
+
+### 📧 New User Registration & Email (SendGrid)
+
+When a **new user registers** through the standard registration page, an email confirmation link is sent via SendGrid.  
+**The SendGrid API key is not included in the repository for security reasons.**
+
+To enable email sending, add your SendGrid credentials to `appsettings.json` in `VMAPP.Web`:
+
+```json
+"SendGridApiKey": {
+  "ApiKey": "YOUR_SENDGRID_API_KEY",
+  "SenderEmail": "your-verified-sender@example.com",
+  "SenderName": "VMAPP"
+}
+```
+
+> If the key is not configured, email sending will silently fail but the application will still run normally.  
+> **For testing, use the pre-seeded accounts above — they do not require email confirmation.**
 
 ---
 
@@ -40,19 +105,28 @@ It includes role-based access control, ASP.NET Core Identity integration, transa
 - `InsuranceCompany` users are automatically redirected to their own company's detail page
 - `InsuranceCompany` users can view their company details, policies, and claims, and add new claims
 
+### Annual Review Management
+
+- Create, edit, and delete annual review companies — `ProgramAdministrator` only
+- Assign vehicles to annual review companies via annual reports — `ProgramAdministrator` and `AnnualReviewCompany` users
+- Delete annual reports — `ProgramAdministrator` only
+- Track report number, inspection date, expiry date, pass/fail status, and notes per report
+- `AnnualReviewCompany` users are automatically redirected to their own company's detail page
+- `AnnualReviewCompany` users can view their company details and assigned vehicles, and add new reports
+
 ### User Management & Administration
 
 - Administration area restricted to `ProgramAdministrator` role
 - List, view, create, edit, soft-delete users
-- Assign roles (`ProgramAdministrator`, `VehicleService`, `InsuranceCompany`) to users
-- Assign users to a specific service station or insurance company
+- Assign roles (`ProgramAdministrator`, `VehicleService`, `InsuranceCompany`, `AnnualReviewCompany`) to users
+- Assign users to a specific service station, insurance company, or annual review company
 
 ### Authentication & Authorization
 
 - ASP.NET Core Identity with custom `ApplicationUser` and `ApplicationRole`
 - Email confirmation and password reset via SendGrid
 - Two-factor authentication (2FA) support; admins are required to have 2FA enabled (`EnforceAdmin2FAMiddleware`)
-- Three application roles: `ProgramAdministrator`, `VehicleService`, `InsuranceCompany`
+- Four application roles: `ProgramAdministrator`, `VehicleService`, `InsuranceCompany`, `AnnualReviewCompany`
 - Cookie-based authentication with consistent security policy
 
 ### Role-Based Access Control
@@ -70,6 +144,8 @@ Full access to everything in the application.
 | Insurance Companies | Create, edit, delete, view details |
 | Insurance Policies | Add, delete |
 | Insurance Claims | Add, delete |
+| Annual Review Companies | Create, edit, delete, view details |
+| Annual Reports | Add, delete |
 | Vehicles | Full CRUD |
 | User Administration | Full CRUD, role assignment, service/company assignment |
 
@@ -82,7 +158,7 @@ Read-only access to service station data plus the ability to add service records
 | Service Stations | View own station's detail page only (auto-redirected on login) |
 | Service Records | Add new records only — edit and delete are restricted to `ProgramAdministrator` |
 | Vehicle assignment / removal | Not permitted |
-| Insurance, Vehicles, Administration | Not accessible |
+| Insurance, Annual Review, Vehicles, Administration | Not accessible |
 
 #### `InsuranceCompany`
 
@@ -94,7 +170,18 @@ Read-only access to insurance data plus the ability to add claims.
 | Insurance Policies | View policy details only |
 | Insurance Claims | Add new claims only — delete is restricted to `ProgramAdministrator` |
 | Policy creation / deletion | Not permitted |
-| Service Stations, Vehicles, Administration | Not accessible |
+| Service Stations, Annual Review, Vehicles, Administration | Not accessible |
+
+#### `AnnualReviewCompany`
+
+Read-only access to annual review data plus the ability to add reports.
+
+| Area | Allowed Actions |
+|---|---|
+| Annual Review Companies | View own company's detail page only (auto-redirected on login) |
+| Annual Reports | Add new reports only — delete is restricted to `ProgramAdministrator` |
+| Company creation / deletion | Not permitted |
+| Service Stations, Insurance, Vehicles, Administration | Not accessible |
 
 ### UI / UX
 
@@ -107,6 +194,7 @@ Read-only access to insurance data plus the ability to add claims.
 ### Logging & Error Handling
 
 - Structured logging with Serilog (request logging, enriched with user identity)
+- Bootstrap logger configured in `Program.cs` before host build — captures startup errors even before the full logger is configured
 - `GlobalExceptionMiddleware` catches any unhandled exception, logs it with Serilog, and redirects to the 500 error page (in Development the default exception page is shown instead)
 - `UseStatusCodePagesWithReExecute` intercepts HTTP error responses and re-executes through `HomeController.Error(int? statusCode)`
 - Four dedicated, branded error pages served by `HomeController`:
@@ -155,6 +243,7 @@ Provides shared validation constants consumed by data model annotations and any 
 | `AdministratorRoleName` | `"ProgramAdministrator"` |
 | `InsuranceCompanyRoleName` | `"InsuranceCompany"` |
 | `VehicleServiceRoleName` | `"VehicleService"` |
+| `AnnualReviewCompanyRoleName` | `"AnnualReviewCompany"` |
 | `VINRegex` | Regex for a valid 17-character VIN (`A-H, J-N, P-R, Z, 0-9`) |
 | `VehicleServiceName` | `150` - max length for service station name |
 | `VehicleServiceDescription` | `1000` - max length for service station description |
@@ -167,6 +256,10 @@ Provides shared validation constants consumed by data model annotations and any 
 | `InsuranceCompanyDescription` | `1000` - max length for insurance company description |
 | `InsurancePolicyNumber` | `50` - max length for policy number |
 | `InsuranceClaimDescription` | `1500` - max length for claim description |
+| `AnnualReviewCompanyName` | `150` - max length for annual review company name |
+| `AnnualReviewCompanyDescription` | `1000` - max length for annual review company description |
+| `AnnualReportNumber` | `50` - max length for report number |
+| `AnnualReportNotes` | `1500` - max length for report notes |
 
 ---
 
@@ -184,6 +277,8 @@ Data access layer. Only the service layer (`VMAPP.Services`) uses `ApplicationDb
 | `InsuranceCompanies` | `InsuranceCompany` | Insurance company entries; implements `IAuditInfo`, `IDeletableEntity` |
 | `InsurancePolicies` | `InsurancePolicy` | Policies linking a `Vehicle` to an `InsuranceCompany` |
 | `InsuranceClaims` | `InsuranceClaim` | Claims filed against an `InsurancePolicy`; `Amount` as `decimal(18,2)` |
+| `AnnualReviewCompanies` | `AnnualReviewCompany` | Annual review company entries; implements `IAuditInfo`, `IDeletableEntity` |
+| `AnnualReports` | `AnnualReport` | Inspection reports linking a `Vehicle` to an `AnnualReviewCompany`; implements `IAuditInfo`, `IDeletableEntity` |
 | `Users` | `ApplicationUser` | Extended Identity user |
 
 **Fluent configuration highlights:**
@@ -195,13 +290,15 @@ Data access layer. Only the service layer (`VMAPP.Services`) uses `ApplicationDb
 
 #### Entity Models (`VMAPP.Data/Models`)
 
-- **`Vehicle`** - `VehicleId`, `VIN`, `CarBrand`, `CarModel`, `CreatedOnYear`, `Color`, `VehicleType` (enum), `CreatedOn`, navigation: `ICollection<ServiceRecord>`, `ICollection<InsurancePolicy>`
+- **`Vehicle`** - `VehicleId`, `VIN`, `CarBrand`, `CarModel`, `CreatedOnYear`, `Color`, `VehicleType` (enum), `CreatedOn`, navigation: `ICollection<ServiceRecord>`, `ICollection<InsurancePolicy>`, `ICollection<AnnualReport>`
 - **`VehicleService`** - `Id`, `Name`, `Description`, `CreatedOn`, `City`, `Address`, `Email`, `Phone`, navigation: `ICollection<ServiceRecord>`, `ICollection<ApplicationUser>`
 - **`ServiceRecord`** - `ServiceRecordId`, `ServiceDate`, `Description`, `Cost`, `VehicleId`, `VehicleServiceId`, `CreatedById`, `CreatedOn`, navigation: `Vehicle`, `VehicleService`
 - **`InsuranceCompany`** - `Id`, `Name`, `Description`, `City`, `Address`, `Email`, `Phone`, `CreatedOn`, `CreatedById`, `ModifiedById`, `IsDeleted`, navigation: `ICollection<InsurancePolicy>`, `ICollection<ApplicationUser>`
 - **`InsurancePolicy`** - `Id`, `VehicleId`, `InsuranceCompanyId`, `PolicyNumber`, `StartDate`, `EndDate`, `CreatedById`, `IsDeleted`, navigation: `Vehicle`, `InsuranceCompany`, `ICollection<InsuranceClaim>`
 - **`InsuranceClaim`** - `Id`, `InsurancePolicyId`, `ClaimDate`, `Description`, `Amount`, `CreatedOn`, `IsDeleted`, navigation: `InsurancePolicy`
-- **`ApplicationUser`** - extends `IdentityUser`; adds `City`, `Address`, `CreatedOn`, `IsDeleted`, `VehicleServiceId`, `InsuranceCompanyId`; implements `IAuditInfo`, `IDeletableEntity`
+- **`AnnualReviewCompany`** - `Id`, `Name`, `Description`, `City`, `Address`, `Email`, `Phone`, `CreatedOn`, `CreatedById`, `ModifiedById`, `IsDeleted`, navigation: `ICollection<AnnualReport>`, `ICollection<ApplicationUser>`
+- **`AnnualReport`** - `Id`, `VehicleId`, `AnnualReviewCompanyId`, `ReportNumber`, `InspectionDate`, `ExpiryDate`, `Passed`, `Notes`, `CreatedById`, `CreatedOn`, `IsDeleted`, navigation: `Vehicle`, `AnnualReviewCompany`
+- **`ApplicationUser`** - extends `IdentityUser`; adds `City`, `Address`, `CreatedOn`, `IsDeleted`, `VehicleServiceId`, `InsuranceCompanyId`, `AnnualReviewCompanyId`; implements `IAuditInfo`, `IDeletableEntity`
 - **`ApplicationRole`** - extends `IdentityRole`
 - **`VehicleType`** (enum) - `Sedan`, `SUV`, `Truck`, `Coupe`, `Convertible`, `Hatchback`, `Van`, `Wagon`, `Motorcycle`, `Electric`
 - **`IAuditInfo`** (base interface) - `CreatedOn`, `CreatedById`, `ModifiedOn`, `ModifiedById`
@@ -213,15 +310,18 @@ Data access layer. Only the service layer (`VMAPP.Services`) uses `ApplicationDb
 |---|---|
 | `ISeeder` | Interface - `Task SeedAsync(ApplicationDbContext)` |
 | `ApplicationDbContextSeeder` | Orchestrator - runs all seeders in order |
-| `RoleSeeding` | Seeds application roles (`ProgramAdministrator`, `VehicleService`, `InsuranceCompany`) |
+| `RoleSeeding` | Seeds application roles (`ProgramAdministrator`, `VehicleService`, `InsuranceCompany`, `AnnualReviewCompany`) |
 | `AdminUserSeeding` | Seeds the default admin user account |
 | `VehicleSeeding` | Seeds sample `Vehicle` rows |
 | `VehicleServiceSeeding` | Seeds sample `VehicleService` rows |
 | `InsuranceCompanySeeding` | Seeds sample `InsuranceCompany` rows |
+| `AnnualReviewCompanySeeding` | Seeds sample `AnnualReviewCompany` rows |
 | `UserSeeding` | Seeds sample application users and assigns them to services/companies |
+| `TestUsersSeeding` | Seeds 4 ready-to-use test accounts with confirmed emails and no 2FA (see [Test Accounts](#-pre-seeded-test-accounts-no-email-confirmation-required)) |
 | `ServiceRecordSeeding` | Seeds sample `ServiceRecord` rows |
 | `InsurancePolicySeeding` | Seeds sample `InsurancePolicy` rows |
 | `InsuranceClaimSeeding` | Seeds sample `InsuranceClaim` rows |
+| `AnnualReportSeeding` | Seeds sample `AnnualReport` rows |
 
 The seeder is idempotent - each individual seeder checks for existing data before inserting.
 
@@ -249,6 +349,14 @@ This layer owns all `ApplicationDbContext` usage. Controllers never see `DbConte
 - **`InsurancePolicyFormDto`** - Policy creation/edit data: `Id`, `VehicleId`, `InsuranceCompanyId`, `PolicyNumber`, `StartDate`, `EndDate`, `CreatedById`
 - **`InsurancePolicyDetailsDto`** - Full policy view: `Id`, `PolicyNumber`, `StartDate`, `EndDate`, `VehicleVIN`, `InsuranceCompanyName`, `List<InsuranceClaimFormDto> Claims`
 - **`InsuranceClaimFormDto`** - Claim data: `Id`, `InsurancePolicyId`, `ClaimDate`, `Description`, `Amount`
+
+**Annual Review DTOs (`AnnualReviewDTOs/`):**
+
+- **`AnnualReviewCompanyDto`** - Annual review company info: `Id`, `Name`, `City`, `Address`, `Email`, `Phone`, `Description`, `CreatedOn`, `CreatedById`, `ModifiedById`
+- **`AnnualReviewCompanyWithVehiclesDto`** - Company info plus vehicles with active reports: `Id`, `Name`, `City`, `Address`, `Email`, `Phone`, `Description`, `CreatedOn`, `List<VehicleWithReportIdDto> Vehicles`
+- **`VehicleWithReportIdDto`** - Vehicle info with the associated report ID and report number: `Id`, `ReportId`, `VIN`, `CarBrand`, `CarModel`, `CreatedOnYear`, `Color`, `VehicleType`, `ReportNumber`
+- **`AnnualReportFormDto`** - Report creation data: `VehicleId`, `AnnualReviewCompanyId`, `ReportNumber`, `InspectionDate`, `ExpiryDate`, `Passed`, `Notes`, `CreatedById`
+- **`AnnualReportDetailsDto`** - Full report view: `Id`, `ReportNumber`, `InspectionDate`, `ExpiryDate`, `Passed`, `Notes`, `VehicleId`, `VehicleVIN`, `VehicleBrand`, `VehicleModel`, `AnnualReviewCompanyId`, `AnnualReviewCompanyName`
 
 #### Service Interfaces (`VMAPP.Services/Interfaces`)
 
@@ -314,6 +422,23 @@ This layer owns all `ApplicationDbContext` usage. Controllers never see `DbConte
 | `AssignUserAsync(string userId, int? companyId)` | Assigns or clears a user's insurance company association, returns `bool` |
 | `GetCompanyIdByPolicyIdAsync(int policyId)` | Returns the `InsuranceCompanyId` for a given policy, or `null` |
 
+**`IVSAnnualReviewService`** - Manages annual review companies and inspection reports:
+
+| Method | Description |
+|---|---|
+| `GetAllAsync()` | Returns all annual review companies as `IReadOnlyList<AnnualReviewCompanyDto>` |
+| `GetByIdAsync(int id)` | Returns a single annual review company or `null` |
+| `CreateAsync(AnnualReviewCompanyDto dto)` | Creates a new annual review company, returns new `Id` |
+| `UpdateAsync(AnnualReviewCompanyDto dto)` | Updates an existing annual review company, returns `bool` |
+| `DeleteAsync(int id)` | Deletes an annual review company, returns `bool` |
+| `GetCompanyWithVehiclesAsync(int id)` | Returns full `AnnualReviewCompanyWithVehiclesDto` by ID |
+| `GetReportDetailsAsync(int id)` | Returns `AnnualReportDetailsDto` for a given report |
+| `GetVehicleByVinAsync(string vin)` | Looks up a vehicle by VIN |
+| `AddReportAsync(AnnualReportFormDto dto)` | Creates a new annual report, returns new `Id` |
+| `DeleteReportAsync(int id)` | Deletes an annual report, returns `bool` |
+| `AssignUserAsync(string userId, int? companyId)` | Assigns or clears a user's annual review company association, returns `bool` |
+| `GetCompanyIdByReportIdAsync(int reportId)` | Returns the `AnnualReviewCompanyId` for a given report, or `null` |
+
 **`ICustomEmailSender`** / **`IEmailSender`** - Transactional email abstractions backed by `SendGridEmailSender` and `IdentityEmailSenderAdapter`.
 
 #### Service Implementations
@@ -324,6 +449,7 @@ This layer owns all `ApplicationDbContext` usage. Controllers never see `DbConte
 | `VSCarsService` | `IVSCarsService` | Vehicle creation/edit/delete within a service context; load service records per vehicle/service combination |
 | `VSService` | `IVSService` | Standalone vehicle CRUD; maps `Vehicle` <-> `VehicleDto` |
 | `VSInsurance` | `IVSInsuranceService` | CRUD for insurance companies, policies, and claims; user assignment; vehicle lookup by VIN |
+| `VSAnnualReview` | `IVSAnnualReviewService` | CRUD for annual review companies and inspection reports; user assignment; vehicle lookup by VIN |
 | `SendGridEmailSender` | `ICustomEmailSender` | Sends transactional emails via the SendGrid API |
 | `IdentityEmailSenderAdapter` | `IEmailSender` (ASP.NET Core Identity) | Adapts `ICustomEmailSender` for use with Identity email confirmation and password reset flows |
 
@@ -335,6 +461,23 @@ This layer owns all `ApplicationDbContext` usage. Controllers never see `DbConte
 ### VMAPP.Web
 
 ASP.NET Core MVC project with controllers, Identity Razor Pages, administration area, view models, and views.
+
+#### Startup & Database Initialisation
+
+`Program.cs` uses a bootstrap Serilog logger before host build (to capture pre-startup errors), then calls:
+
+```csharp
+await app.InitializeDatabaseAsync();
+```
+
+`InitializeDatabaseAsync` (in `ServiceCollectionExtensions`) runs on every startup:
+
+```csharp
+await db.Database.MigrateAsync();                    // applies any pending migrations
+await new ApplicationDbContextSeeder().SeedAsync(db); // seeds data if not already present
+```
+
+This means **the database is created and seeded automatically on first run** — no manual migration or seeding step is required.
 
 #### Dependency Injection
 
@@ -358,12 +501,12 @@ services.AddScoped<IVSManagementService, VSManagementService>();
 services.AddScoped<IVSCarsService, VSCarsService>();
 services.AddScoped<IVSService, VSService>();
 services.AddScoped<IVSInsuranceService, VSInsurance>();
+services.AddScoped<IVSAnnualReviewService, VSAnnualReview>();
 services.AddTransient<ICustomEmailSender, SendGridEmailSender>();
 services.AddTransient<IEmailSender, IdentityEmailSenderAdapter>();
 ```
 
-`RequestLocalizationOptions` is configured to use `en-US` for consistent decimal
-handling (e.g., costs like `10.05`).
+`RequestLocalizationOptions` is configured to use `en-US` for consistent decimal handling (e.g., costs like `10.05`).
 
 #### Controllers
 
@@ -398,20 +541,33 @@ handling (e.g., costs like `10.05`).
     - `InsurancePolicyDetailsDto` -> `InsurancePolicyDetailsViewModel`
     - `InsuranceClaimFormDto` <-> `InsuranceClaimFormViewModel`
 
+- **`AnnualReviewController`**
+  - Requires `ProgramAdministrator` or `AnnualReviewCompany` role
+  - Injects `IVSAnnualReviewService` + `UserManager<ApplicationUser>`
+  - `ProgramAdministrator`: full access — create/edit/delete companies, add/delete reports
+  - `AnnualReviewCompany`: restricted access — view own company details and vehicles, add reports only
+  - `AnnualReviewCompany` role users are automatically scoped to their own company
+  - Key DTO -> ViewModel mappings:
+    - `AnnualReviewCompanyDto` <-> `AnnualReviewCompanyViewModel`, `AddAnnualReviewCompanyViewModel`, `EditAnnualReviewCompanyViewModel`
+    - `AnnualReviewCompanyWithVehiclesDto` -> `AnnualReviewCompanyDetailsViewModel`
+    - `AnnualReportFormDto` <-> `AnnualReportFormViewModel`
+    - `AnnualReportDetailsDto` -> `AnnualReportDetailsViewModel`
+  - No direct `DbContext` usage.
+
 - **`HomeController`**
   - Home / Privacy / Terms / Error pages.
 
 - **`Administration/UsersController`** (Administration Area, `ProgramAdministrator` only)
   - Injects `UserManager<ApplicationUser>`, `RoleManager<ApplicationRole>`, `IVSManagementService`, `IVSInsuranceService`
   - Lists, views, creates, edits, and soft-deletes users
-  - Assigns roles and service station / insurance company associations to users
+  - Assigns roles and service station / insurance company / annual review company associations to users
 
 #### Middleware & Extensions (`VMAPP.Web/Extensions`)
 
 | Class | Role |
 |---|---|
-| `ServiceCollectionExtensions` | Fluent extension methods for all DI registrations |
-| `ApplicationsBuilderExtensions` | `SeedDatabase()` - seeds on startup; `InsertEndpoints()` - configures route mapping; `AddErrorHandler()` - error page middleware; `InsertUserInLog()` - enriches Serilog with the current user |
+| `ServiceCollectionExtensions` | Fluent extension methods for all DI registrations; includes `InitializeDatabaseAsync` which auto-migrates and seeds on startup |
+| `ApplicationsBuilderExtensions` | `InsertEndpoints()` - configures route mapping; `AddErrorHandler()` - error page middleware; `InsertUserInLog()` - enriches Serilog with the current user; `AddSerilog()` - configures Serilog |
 | `SerilogExtensions` | Configures Serilog from `appsettings.json` |
 | `IdentityOptionsProvider` | Centralizes Identity password, lockout, and sign-in policy configuration |
 | `GlobalExceptionMiddleware` | Catches unhandled exceptions and returns a friendly error response |
@@ -426,6 +582,7 @@ handling (e.g., costs like `10.05`).
 | `Models/VehicleServiceCars/` | `ServiceVehicleViewModel` |
 | `Models/ServiceRecordModels/` | `AddRecordViewModel`, `ServiceRecordFormViewModel` |
 | `Models/InsuranceModels/` | `InsuranceCompanyViewModel`, `AddInsuranceCompanyViewModel`, `EditInsuranceCompanyViewModel`, `InsuranceCompanyDetailsViewModel`, `InsurancePolicyFormViewModel`, `InsurancePolicyDetailsViewModel`, `InsuranceClaimFormViewModel` |
+| `Models/AnnualReviewModels/` | `AnnualReviewCompanyViewModel`, `AddAnnualReviewCompanyViewModel`, `EditAnnualReviewCompanyViewModel`, `AnnualReviewCompanyDetailsViewModel`, `AnnualReportDetailsViewModel`, `AnnualReportFormViewModel`, `VehicleWithReportRowViewModel` |
 | `Areas/Administration/Models/` | `UserListViewModel`, `UserDetailsViewModel`, `CreateUserViewModel`, `EditUserViewModel` |
 
 #### Views (`VMAPP.Web/Views`)
@@ -489,6 +646,16 @@ Each page renders a large coloured status-code number, a short title, a plain-la
 | `Details.cshtml` | `GET /Insurance/Details/{id}` | `InsuranceCompanyDetailsViewModel` | Company detail page with a table of associated vehicles and policies. **Add Policy** button and **Delete** policy column visible to `ProgramAdministrator` only. |
 | `PolicyDetails.cshtml` | `GET /Insurance/PolicyDetails/{id}` | `InsurancePolicyDetailsViewModel` | Full policy view with vehicle and company info plus a table of claims. **Add Claim** available to all authorised roles. **Delete** claim column visible to `ProgramAdministrator` only. |
 
+##### AnnualReview/
+
+| View | Route | Model | Description |
+|---|---|---|---|
+| `Index.cshtml` | `GET /AnnualReview/Index` | `IEnumerable<AnnualReviewCompanyViewModel>` | Lists all annual review companies. `ProgramAdministrator` sees all; `AnnualReviewCompany` users are redirected to their own details page. |
+| `AddAnnualReviewCompany.cshtml` | `GET/POST /AnnualReview/AddAnnualReviewCompany` | `AddAnnualReviewCompanyViewModel` | Form to create a new annual review company. Restricted to `ProgramAdministrator`. |
+| `EditAnnualReviewCompany.cshtml` | `GET/POST /AnnualReview/EditAnnualReviewCompany/{id}` | `EditAnnualReviewCompanyViewModel` | Form to update an existing annual review company. |
+| `Details.cshtml` | `GET /AnnualReview/Details/{id}` | `AnnualReviewCompanyDetailsViewModel` | Company detail page with a table of associated vehicles and their report numbers. **Add Report** available to all authorised roles. **Delete** company button visible to `ProgramAdministrator` only. |
+| `ReportDetails.cshtml` | `GET /AnnualReview/ReportDetails/{id}` | `AnnualReportDetailsViewModel` | Full report view with vehicle info, inspection date, expiry date, pass/fail status, and notes. **Delete** report button visible to `ProgramAdministrator` only. |
+
 ##### Areas/Administration/
 
 | View | Route | Description |
@@ -533,16 +700,17 @@ A standalone **.NET 8 console application** designed to **run database migration
    - `VehicleSeeding` -> seeds `Vehicles`
    - `VehicleServiceSeeding` -> seeds `VehicleServices`
    - `InsuranceCompanySeeding` -> seeds `InsuranceCompanies`
+   - `AnnualReviewCompanySeeding` -> seeds `AnnualReviewCompanies`
    - `UserSeeding` -> seeds users and assignments
+   - `TestUsersSeeding` -> seeds 4 ready-to-use test accounts
    - `ServiceRecordSeeding` -> seeds `ServiceRecords`
    - `InsurancePolicySeeding` -> seeds `InsurancePolicies`
    - `InsuranceClaimSeeding` -> seeds `InsuranceClaims`
+   - `AnnualReportSeeding` -> seeds `AnnualReports`
 
 Each individual seeder is **idempotent**: it skips insertion if rows already exist in the target table.
 
 #### Running the SandBox
-
-> **Before running**, ensure the database exists and all migrations have been applied (see [Step 4](#step-4--create-the-database) below).
 
 ```
 dotnet run --project VMAPP.SandBox
@@ -747,6 +915,7 @@ No database setup is required - all tests use the EF Core InMemory provider.
 - SQL Server Management Studio (SSMS)
 - Visual Studio 2022 / VS Code
 - (Optional) A SendGrid account and API key for email features
+- (Optional) An authenticator app (Google Authenticator / Microsoft Authenticator) for admin 2FA
 
 ---
 
@@ -771,6 +940,8 @@ This project connects to SQL Server using the following connection string
 
 > These credentials are for **local development/testing only**.
 
+> **The database is created automatically on first run** via `MigrateAsync()` in `InitializeDatabaseAsync`. You only need to ensure the SQL Server instance is running and reachable.
+
 ---
 
 ### Step 1 - Install SQL Server
@@ -786,65 +957,50 @@ Ensure your SQL instance name is:
 
 ### Step 2 - Enable SQL Server Authentication Mode
 
-1. Open SSMS  
-2. Connect to `localhost\Server1`  
-3. Right-click the server -> **Properties**  
-4. Open **Security** tab  
-5. Select: **SQL Server and Windows Authentication mode**  
+1. Open SSMS
+2. Connect to `localhost\Server1`
+3. Right-click the server -> **Properties**
+4. Open **Security** tab
+5. Select: **SQL Server and Windows Authentication mode**
 6. Restart SQL Server service
 
 ---
 
 ### Step 3 - Enable and Configure `sa` Login
 
-1. In SSMS -> **Security -> Logins**  
-2. Right-click `sa` -> **Properties**  
-3. Set password to: `pb`  
+1. In SSMS -> **Security -> Logins**
+2. Right-click `sa` -> **Properties**
+3. Set password to: `pb`
 4. In **Status** tab ensure **Login is Enabled**
 
 ---
 
-### Step 4 - Create the Database
+### Step 4 - Run the Application
 
-#### Option A - Manual Creation
+Set `VMAPP.Web` as the startup project and press **F5**.
 
-1. Right-click **Databases**  
-2. **New Database...**  
-3. Name it: `VMAPP`
+On first launch the application will automatically:
+1. Connect to SQL Server
+2. Create the `VMAPP` database (via `MigrateAsync`)
+3. Apply all EF Core migrations
+4. Seed all roles, sample data, and test user accounts
 
-#### Option B - Using Entity Framework (Recommended)
+> You can then log in immediately using any of the [pre-seeded test accounts](#-pre-seeded-test-accounts-no-email-confirmation-required).
 
-**Via `VMAPP.Web`** - from the `VMAPP.Web` project directory:
+#### Alternative: Manual Migration via VMAPP.SandBox
+
+If you prefer to prepare the database before running the web app:
 
 ```
-dotnet ef database update
+dotnet ef database update --project VMAPP.Data --startup-project VMAPP.SandBox
+dotnet run --project VMAPP.SandBox
 ```
 
-or in Visual Studio Package Manager Console:
+or in Visual Studio Package Manager Console (with `VMAPP.Data` as default project):
 
 ```
 Update-Database
 ```
-
-**Via `VMAPP.SandBox`** - without running the web app:
-
-```
-dotnet ef database update --project VMAPP.Data --startup-project VMAPP.SandBox
-```
-
-All options create the database and all tables automatically.
-
----
-
-### Step 5 - Seed the Database (Optional)
-
-To populate the database with sample vehicles, service stations, insurance companies, users, policies, and claims, run the SandBox project:
-
-```
-dotnet run --project VMAPP.SandBox
-```
-
-The web application can also seed on startup if `app.SeedDatabase()` is called from `ApplicationsBuilderExtensions` in `Program.cs`.
 
 ---
 
@@ -859,7 +1015,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
 
 The application reads the connection string from `appsettings.json` and
 connects to SQL Server using Entity Framework Core **inside the service layer**
-(`VSManagementService`, `VSCarsService`, `VSService`, `VSInsurance`), not directly in controllers.
+(`VSManagementService`, `VSCarsService`, `VSService`, `VSInsurance`, `VSAnnualReview`), not directly in controllers.
 
 ---
 
@@ -879,9 +1035,9 @@ or simply press **F5** in Visual Studio (with `VMAPP.Web` as the startup project
 
 - Controllers use **DI + services + DTOs**, not `ApplicationDbContext` directly.
 - All data access is isolated in the `VMAPP.Services` layer.
+- The database is **created and seeded automatically on startup** — no manual migration or seeding step is required for a first run.
 - `VMAPP.SandBox` provides a web-free way to apply migrations and seed data - useful for testing the data layer in isolation.
 - `VMAPP.Test` runs entirely against an EF Core InMemory provider - no SQL Server required.
-- `ProgramAdministrator` users are required to have 2FA enabled before accessing the application (`EnforceAdmin2FAMiddleware`).
-- This configuration and the `sa` account/password are intended **only** for
-  local development and testing.  
-  Do **not** use the `sa` account or weak passwords in production environments.
+- `ProgramAdministrator` users are required to have 2FA enabled before accessing the application (`EnforceAdmin2FAMiddleware`). Use the non-admin test accounts to explore the app without an authenticator app.
+- The SendGrid API key is **not included** in the repository for security reasons. Email features require adding the key to `appsettings.json`. The pre-seeded test accounts do not require email confirmation.
+- This configuration and the `sa` account/password are intended **only** for local development and testing. Do **not** use the `sa` account or weak passwords in production environments.
