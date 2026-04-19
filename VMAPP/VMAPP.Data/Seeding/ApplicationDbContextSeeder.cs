@@ -20,11 +20,12 @@ namespace VMAPP.Data.Seeding
                 new VehicleSeeding(),
                 new VehicleServiceSeeding(),   
                 new InsuranceCompanySeeding(), 
-                new UserSeeding(),             
+                new AnnualReviewCompanySeeding(),
+                new UserSeeding(),
+                new TestUsersSeeding(),
                 new ServiceRecordSeeding(),
                 new InsurancePolicySeeding(),
                 new InsuranceClaimSeeding(),
-                new AnnualReviewCompanySeeding(),
                 new AnnualReportSeeding(),
             };
 

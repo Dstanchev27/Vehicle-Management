@@ -54,5 +54,7 @@ namespace VMAPP.Data.Models
 
         public int? AnnualReviewCompanyId { get; set; }
         public AnnualReviewCompany? AnnualReviewCompany { get; set; }
+
+        public bool RequireAuthenticatorSetup { get; set; } = false;
     }
 }

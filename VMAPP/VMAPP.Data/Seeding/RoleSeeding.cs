@@ -10,20 +10,21 @@ namespace VMAPP.Data.Seeding
     {
         public async Task SeedAsync(ApplicationDbContext dbContext)
         {
-            if (dbContext.Roles.Any())
-            {
-                return;
-            }
-
             var roleNames = new[]
             {
                 nameof(AppRole.InsuranceCompany),
                 nameof(AppRole.VehicleService),
                 nameof(AppRole.ProgramAdministrator),
+                nameof(AppRole.AnnualReviewCompany),
             };
 
             foreach (var roleName in roleNames)
             {
+                if (dbContext.Roles.Any(r => r.Name == roleName))
+                {
+                    continue;
+                }
+
                 await dbContext.Roles.AddAsync(new ApplicationRole(roleName)
                 {
                     NormalizedName = roleName.ToUpper()

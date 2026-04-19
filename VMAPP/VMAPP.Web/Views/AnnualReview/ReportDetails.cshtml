@@ -1,0 +1,80 @@
+@model VMAPP.Web.Models.AnnualReviewModels.AnnualReportDetailsViewModel
+@{
+    ViewData["Title"] = "Report Details — " + (Model.ReportNumber ?? $"#{Model.Id}");
+}
+
+<div class="table-wrapper">
+    <div class="table-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@ViewData["Title"]</h2>
+            <a asp-controller="AnnualReview"
+               asp-action="Details"
+               asp-route-id="@Model.AnnualReviewCompanyId"
+               class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Back to Company
+            </a>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header table-dark text-dark fw-semibold">
+                Report Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Report Number</label>
+                        <input class="form-control" value="@(Model.ReportNumber ?? "—")" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Annual Review Company</label>
+                        <input class="form-control" value="@Model.AnnualReviewCompanyName" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Inspection Date</label>
+                        <input class="form-control" value="@Model.InspectionDate.ToString("dd.MM.yyyy")" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Expiry Date</label>
+                        <input class="form-control" value="@Model.ExpiryDate.ToString("dd.MM.yyyy")" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Vehicle VIN</label>
+                        <input class="form-control" value="@Model.VehicleVIN" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Vehicle</label>
+                        <input class="form-control" value="@Model.VehicleBrand @Model.VehicleModel" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Result</label>
+                        @if (Model.Passed)
+                        {
+                            <div>
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check-circle"></i> Passed
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <span class="badge bg-danger fs-6">
+                                    <i class="fas fa-times-circle"></i> Failed
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                    {
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Notes</label>
+                            <textarea class="form-control" rows="4" disabled>@Model.Notes</textarea>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

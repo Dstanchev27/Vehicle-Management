@@ -18,13 +18,13 @@
             if (signInManager.IsSignedIn(context.User))
             {
                 var user = await userManager.GetUserAsync(context.User);
-                var isAdmin = user != null && await userManager.IsInRoleAsync(user, "Administrator");
-                var has2FA = user != null && await userManager.GetTwoFactorEnabledAsync(user);
+                var isAdmin = user != null && await userManager.IsInRoleAsync(user, "ProgramAdministrator");
+                var requiresSetup = user != null && user.RequireAuthenticatorSetup;
 
                 var path = context.Request.Path.Value ?? "";
 
 
-                if (isAdmin && !has2FA &&
+                if (isAdmin && requiresSetup &&
                     !path.StartsWith("/Identity/Account/Manage/EnableAuthenticator", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/Identity/Account/Logout", StringComparison.OrdinalIgnoreCase) &&
                     !path.StartsWith("/css") && !path.StartsWith("/js") && !path.StartsWith("/images"))

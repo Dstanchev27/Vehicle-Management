@@ -4,6 +4,7 @@ namespace VMAPP.Data.Models.Enums
     {
         InsuranceCompany = 0,
         VehicleService = 1,
-        ProgramAdministrator = 2
+        ProgramAdministrator = 2,
+        AnnualReviewCompany = 3
     }
 }

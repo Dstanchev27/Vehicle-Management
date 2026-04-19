@@ -1,0 +1,239 @@
+@model VMAPP.Web.Models.AnnualReviewModels.AnnualReviewCompanyDetailsViewModel
+@using VMAPP.Web.Models.AnnualReviewModels
+@{
+    ViewData["Title"] = "Annual Review Company Details — " + Model.Name;
+}
+
+<div class="table-wrapper">
+    <div class="table-box">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>@ViewData["Title"]</h2>
+            @if (User.IsInRole(VMAPP.Common.GlobalConstant.AdministratorRoleName))
+            {
+                <a asp-controller="AnnualReview" asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            }
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header fw-semibold text-dark">
+                Company Information
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input class="form-control" value="@Model.Name" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">City</label>
+                        <input class="form-control" value="@Model.City" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Address</label>
+                        <input class="form-control" value="@Model.Address" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Created On</label>
+                        <input class="form-control" value="@Model.CreatedOn.ToString("dd.MM.yyyy")" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input class="form-control" value="@Model.Email" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone</label>
+                        <input class="form-control" value="@Model.Phone" disabled />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea class="form-control" rows="3" disabled>@Model.Description</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Inspected Vehicles (@Model.Vehicles.Count)</h5>
+            <button type="button" class="btn btn-primary btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#addReportModal">
+                <i class="fas fa-plus"></i> Add Report
+            </button>
+        </div>
+
+        <table id="vehiclesTable"
+               class="datatable table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>VIN</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                    <th>Color</th>
+                    <th>Type</th>
+                    <th>Report Number</th>
+                    <th class="text-center action-col">Details</th>
+                    <th class="text-center action-col">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var vehicle in Model.Vehicles)
+                {
+                    <tr>
+                        <td class="fw-semibold">@vehicle.VIN</td>
+                        <td>@vehicle.CarBrand</td>
+                        <td>@vehicle.CarModel</td>
+                        <td>@vehicle.CreatedOnYear</td>
+                        <td>@vehicle.Color</td>
+                        <td>@vehicle.VehicleType</td>
+                        <td>@(vehicle.ReportNumber ?? "—")</td>
+                        <td class="text-center action-col">
+                            <a asp-controller="AnnualReview"
+                               asp-action="ReportDetails"
+                               asp-route-id="@vehicle.ReportId"
+                               class="btn btn-info btn-sm">
+                                <i class="fas fa-info-circle"></i> Details
+                            </a>
+                        </td>
+                        <td class="text-center action-col">
+                            <button type="button"
+                                    class="btn btn-danger btn-sm btn-delete-report"
+                                    data-report-id="@vehicle.ReportId"
+                                    data-report-number="@(vehicle.ReportNumber ?? $"Report #{vehicle.ReportId}")">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+<input type="hidden" id="currentCompanyId" value="@Model.Id" />
+
+<div class="modal fade" id="addReportModal" tabindex="-1"
+     aria-labelledby="addReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReportModalLabel">
+                    <i class="fas fa-plus"></i> Add Annual Report
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Search by VIN</label>
+                    <div class="input-group">
+                        <input type="text" id="vinSearchInput"
+                               class="form-control text-uppercase"
+                               placeholder="Enter 17-character VIN..."
+                               maxlength="17" />
+                        <button class="btn btn-outline-primary" type="button" id="btnSearchVin">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div id="vinSearchMessage" class="mt-2 d-none"></div>
+                </div>
+
+                <div id="vehicleResult" class="d-none">
+                    <hr />
+                    <h6 class="fw-semibold mb-3">Vehicle Found</h6>
+                    <input type="hidden" id="foundVehicleId" />
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">VIN</label>
+                            <input class="form-control" id="resultVin" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Brand</label>
+                            <input class="form-control" id="resultBrand" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Model</label>
+                            <input class="form-control" id="resultModel" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Year</label>
+                            <input class="form-control" id="resultYear" disabled />
+                        </div>
+                    </div>
+                    <hr />
+                    <h6 class="fw-semibold mb-3">Report Details</h6>
+                    <div class="row g-2">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Report Number</label>
+                            <input type="text" id="addReportNumber" class="form-control"
+                                   placeholder="e.g. AR-2024-00001" maxlength="50" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Inspection Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="addInspectionDate" class="form-control" />
+                            <div id="addInspectionDateError" class="text-danger small d-none"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                Expiry Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="addExpiryDate" class="form-control" />
+                            <div id="addExpiryDateError" class="text-danger small d-none"></div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center gap-2 mt-2">
+                            <input type="checkbox" id="addPassed" class="form-check-input" />
+                            <label class="form-label fw-semibold mb-0" for="addPassed">Passed</label>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Notes</label>
+                            <textarea id="addNotes" class="form-control" rows="3"
+                                      placeholder="Optional notes..." maxlength="1500"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="addReportError" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary d-none" id="btnSubmitAddReport">
+                    <i class="fas fa-save"></i> Save Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteReportModal" tabindex="-1"
+     aria-labelledby="deleteReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteReportModalLabel">
+                    <i class="fas fa-trash"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete report
+                <strong id="deleteReportNumber"></strong>?
+                <div id="deleteReportError" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDeleteReport">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/annualReviewDetails.js" asp-append-version="true"></script>
+}

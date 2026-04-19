@@ -18,13 +18,13 @@
 @inject UserManager<ApplicationUser> UserManager
 <body>
 @{
-    bool has2fa = false;
+    bool showMenu = false;
     if (SignInManager.IsSignedIn(User))
     {
         var currentUser = await UserManager.GetUserAsync(User);
         if (currentUser != null)
         {
-            has2fa = await UserManager.GetTwoFactorEnabledAsync(currentUser);
+            showMenu = !currentUser.RequireAuthenticatorSetup;
         }
     }
 }
@@ -61,7 +61,7 @@
                                asp-action="Privacy">Privacy</a>
                         </li>
 
-                        @if (SignInManager.IsSignedIn(User) && has2fa)
+                        @if (SignInManager.IsSignedIn(User) && showMenu)
                         {
                             @if (User.IsInRole("ProgramAdministrator") || User.IsInRole("VehicleService"))
                             {
@@ -79,6 +79,15 @@
                                        asp-area=""
                                        asp-controller="Insurance"
                                        asp-action="Index">Insurance</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("ProgramAdministrator") || User.IsInRole("AnnualReviewCompany"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link buttons-color-header"
+                                       asp-area=""
+                                       asp-controller="AnnualReview"
+                                       asp-action="Index">Annual Review</a>
                                 </li>
                             }
                             @if (User.IsInRole("ProgramAdministrator"))

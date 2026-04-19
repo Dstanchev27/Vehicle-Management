@@ -79,11 +79,10 @@ namespace VMAPP.Web.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     var signedInUser = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
-                    var has2fa = signedInUser != null && await _signInManager.UserManager.GetTwoFactorEnabledAsync(signedInUser);
 
-                    if (!has2fa)
+                    if (signedInUser != null && signedInUser.RequireAuthenticatorSetup)
                     {
-                        _logger.LogInformation("User {Email} logged in without 2FA — redirecting to authenticator setup.", Input.Email);
+                        _logger.LogInformation("User {Email} requires authenticator setup — redirecting.", Input.Email);
                         return RedirectToPage("/Account/Manage/EnableAuthenticator", new { area = "Identity" });
                     }
 

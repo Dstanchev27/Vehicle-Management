@@ -44,6 +44,7 @@ namespace VMAPP.Web.Extensions
             services.AddScoped<IVSCarsService, VSCarsService>();
             services.AddScoped<IVSService, VSService>();
             services.AddScoped<IVSInsuranceService, VSInsurance>();
+            services.AddScoped<IVSAnnualReviewService, VSAnnualReview>();
 
             var supportedCultures = new[] { new CultureInfo("en-US") };
             services.Configure<RequestLocalizationOptions>(options =>
