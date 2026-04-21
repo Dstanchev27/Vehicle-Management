@@ -85,7 +85,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/Insurance/AddClaim', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({
                     insurancePolicyId: policyId,
                     claimDate: addClaimDate.value,
@@ -125,7 +125,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/Insurance/DeleteClaim', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({ id: pendingDeleteClaimId })
             });
             const data = await response.json();

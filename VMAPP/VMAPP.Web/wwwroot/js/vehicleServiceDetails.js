@@ -123,7 +123,7 @@ $(document).ready(function () {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
+                    'X-CSRF-TOKEN': token
                 },
                 body: JSON.stringify({ serviceId, vehicleId })
             });
@@ -163,7 +163,7 @@ $(document).ready(function () {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
+                    'X-CSRF-TOKEN': token
                 },
                 body: JSON.stringify({ serviceId, vehicleId: pendingRemoveVehicleId })
             });

@@ -124,7 +124,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/Insurance/AddPolicy', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({
                     insuranceCompanyId: companyId,
                     vehicleId: parseInt(foundVehicleId.value),
@@ -152,7 +152,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/Insurance/DeletePolicy', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({ id: pendingDeletePolicyId })
             });
             const data = await response.json();

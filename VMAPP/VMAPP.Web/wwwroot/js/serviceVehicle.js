@@ -110,7 +110,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/VehicleServices/AddServiceRecord', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({
                     vehicleId, vehicleServiceId: serviceId,
                     description: addDescription.value.trim(),
@@ -157,7 +157,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/VehicleServices/EditServiceRecord', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({
                     id: parseInt(editRecordId.value), vehicleId, vehicleServiceId: serviceId,
                     description: editDescription.value.trim(),
@@ -184,7 +184,7 @@ $(document).ready(function () {
         try {
             const response = await fetch('/VehicleServices/DeleteServiceRecord', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                 body: JSON.stringify({ id: pendingDeleteId })
             });
             const data = await response.json();

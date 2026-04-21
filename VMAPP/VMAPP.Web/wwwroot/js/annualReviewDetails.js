@@ -128,9 +128,9 @@ $(document).ready(function () {
         try {
             const response = await fetch('/AnnualReview/AddReport', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
-                body: JSON.stringify({
-                    annualReviewCompanyId: companyId,
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
+                    body: JSON.stringify({
+                        annualReviewCompanyId: companyId,
                     vehicleId: parseInt(foundVehicleId.value),
                     reportNumber: addReportNumber.value.trim() || null,
                     inspectionDate: addInspectionDate.value,
@@ -158,8 +158,8 @@ $(document).ready(function () {
         try {
             const response = await fetch('/AnnualReview/DeleteReport', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
-                body: JSON.stringify({ id: pendingDeleteReportId })
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
+                    body: JSON.stringify({ id: pendingDeleteReportId })
             });
             const data = await response.json();
             if (!data.success) { showError(deleteReportError, data.message ?? 'Failed to delete report.'); return; }

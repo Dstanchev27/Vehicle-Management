@@ -10,7 +10,7 @@ using VMAPP.Web.Models.AnnualReviewModels;
 
 namespace VMAPP.Web.Controllers
 {
-    [Authorize(Roles = GlobalConstant.AdministratorRoleName + "," + GlobalConstant.AnnualReviewCompanyRoleName)]
+    [Authorize(Roles = "ProgramAdministrator,AnnualReviewCompany")]
     public class AnnualReviewController : Controller
     {
         private readonly IVSAnnualReviewService annualReviewService;
